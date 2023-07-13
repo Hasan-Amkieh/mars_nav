@@ -1,2 +1,0 @@
-# MarsNav
-ATÜ-ROVER Interface
