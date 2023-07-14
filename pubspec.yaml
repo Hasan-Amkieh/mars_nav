@@ -39,6 +39,8 @@ dependencies:
   msix: ^3.15.0
   sidebarx: ^0.16.0
   shimmer: ^3.0.0
+  syncfusion_flutter_charts: 22.1.38
+  geekyants_flutter_gauges: ^1.0.1
 
 msix_config:
   display_name: mars_nav

@@ -5,9 +5,12 @@ import 'package:mars_nav/pages/ImageryPage.dart';
 import 'package:mars_nav/pages/SensoryPage.dart';
 import 'package:mars_nav/pages/SettignsPage.dart';
 import 'package:mars_nav/pages/ShellPage.dart';
+import 'package:mars_nav/widgets/BatteryIcon.dart';
 import 'package:serial_port_win32/serial_port_win32.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:shimmer/shimmer.dart';
+
+import 'dart:math' as math;
 
 enum RoverState {
   offline("OFFLINE", Colors.blueGrey), standard("STANDARD MODE", Colors.green), autonomous("AUTONOMOUS MODE", Colors.yellow), halt("HALTED", Colors.red);
@@ -22,6 +25,22 @@ class Main { // This class holds all the general variables to the interface as a
   static RoverState roverStatus = RoverState.standard; // holds the state of the rover
   static const double iconSize = 20.0;
   static const pageIndexToName = ["Sensory", "Imagery", "History", "Commands", "Command Shell", "Settings"];
+
+  // Battery Related Rover:
+  static double batteryLevel = 95;
+  static bool isRoverCharging = false;
+  static String roverBatteryRemainingTime = "1h 3m";
+
+  // gas sensors:
+  static double MQ_8_value = 1000;
+  static double MQ_135_value = 700;
+  static double MQ_2_value = 2000;
+  static double MQ_7_value = 9600;
+
+  // Battery Related Drone:
+  static double batteryVolt = 0.0;
+  static bool isDroneCharging = true;
+
 
 }
 
@@ -235,35 +254,59 @@ class ExampleSidebarX extends StatelessWidget {
         footerBuilder: (context, extended) {
           return Container(
             margin: const EdgeInsets.fromLTRB(0, 12, 0, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
               children: [
-                Shimmer.fromColors(
-                    baseColor: Main.roverStatus.color,
-                    highlightColor: Colors.white.withOpacity(0.8),
-                    period: const Duration(milliseconds: 3500),
-                    child: Container(
-                      width: Main.iconSize,
-                      height: Main.iconSize,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.red,
-                      ),
-                    )
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Visibility(visible: _controller.extended, child: Flexible(child: Text("${Main.batteryLevel}%", style: const TextStyle(fontSize: 16, color: Colors.white)))),
+                    Visibility(visible: _controller.extended, child: const SizedBox(width: 10)),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        BatteryIcon(batteryPercentage: Main.batteryLevel / 100.0),
+                        Visibility(
+                            visible: Main.isRoverCharging,
+                            child: Transform.rotate(angle: math.pi / 2, child: const Icon(Icons.bolt, color: Colors.white, size: 20))
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                Visibility(
-                    visible: _controller.extended,
-                    child: const SizedBox(width: 12)
-                ),
-                Visibility(
-                    visible: _controller.extended,
-                    child: Flexible(
-                      child: Text(
-                          Main.roverStatus.description,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                const SizedBox(height: 12),
+                Visibility(visible: _controller.extended, child: Text(Main.roverBatteryRemainingTime, style: TextStyle(color: Colors.white))),
+                Visibility(visible: _controller.extended, child: const SizedBox(height: 12)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Shimmer.fromColors(
+                        baseColor: Main.roverStatus.color,
+                        highlightColor: Colors.white.withOpacity(0.8),
+                        period: const Duration(milliseconds: 3500),
+                        child: Container(
+                          width: Main.iconSize,
+                          height: Main.iconSize,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
+                        )
+                    ),
+                    Visibility(
+                        visible: _controller.extended,
+                        child: const SizedBox(width: 12)
+                    ),
+                    Visibility(
+                      visible: _controller.extended,
+                      child: Flexible(
+                        child: Text(
+                            Main.roverStatus.description,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                        ),
                       ),
                     ),
-                ),
+                  ],
+                )
               ],
             ),
           );
@@ -291,7 +334,7 @@ class _ScreensExample extends StatelessWidget {
         if (Main.roverStatus == RoverState.autonomous) {
           switch (controller.selectedIndex) {
             case 0:
-              return SensoryPage();
+              return SensoryPage(value: 10);
             case 1:
               return HistoryPage();
             case 2:
@@ -309,7 +352,7 @@ class _ScreensExample extends StatelessWidget {
         } else {
           switch (controller.selectedIndex) {
             case 0:
-              return SensoryPage();
+              return SensoryPage(value: 10,);
             case 1:
               return ImageryPage();
             case 2:
