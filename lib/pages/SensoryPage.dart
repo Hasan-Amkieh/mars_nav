@@ -30,16 +30,47 @@ class SensoryPage extends StatelessWidget {
                   iconWidget: Image.asset("lib/icons/chemistry-white.png", height: Main.iconSize * 3, width: Main.iconSize * 3),
                   titleWidget: const Text("Gases", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
                   graph: SfCartesianChart(
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      builder: (data, point, series, pointIndex, seriesIndex) {
+                        var data_ = (data as ChartData);
+                        return Container(
+                            padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: (series as SplineAreaSeries<ChartData, DateTime>).borderColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                      "${data_.x.hour}:${data_.x.minute}:${data_.x.second} , ${data_.y}", style: const TextStyle(color: Colors.white)
+                                  )
+                                ]
+                            )
+                        );
+                      },
+                    ),
                     plotAreaBorderColor: Colors.transparent,
-                    legend: Legend(
+                    legend: const Legend(
+                      overflowMode: LegendItemOverflowMode.wrap,
                       isVisible: true,
                       position: LegendPosition.left,
                       textStyle: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                     primaryXAxis: DateTimeAxis(
-                        isVisible: false
+                        isVisible: false,
                     ),
-                    primaryYAxis: CategoryAxis(
+                    primaryYAxis: NumericAxis(
+                      // axisLabelFormatter: (axisLabelRenderArgs) {
+                      //   print(axisLabelRenderArgs.text);
+                      //   return ChartAxisLabel(axisLabelRenderArgs.text, TextStyle(color: Colors.white));
+                      // },
                       isVisible: false,
                       minimum: 100,
                       maximum: 10000,
