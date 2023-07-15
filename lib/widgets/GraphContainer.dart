@@ -5,16 +5,15 @@ class GraphContainer extends StatelessWidget {
   Widget graph;
   Widget iconWidget;
   Widget titleWidget;
-  double height;
+  double sizeModifier;
 
-  GraphContainer({required this.iconWidget, required this.titleWidget, required this.graph, this.height = 300});
+  GraphContainer({required this.iconWidget, required this.titleWidget, required this.graph, required this.sizeModifier});
 
 
   @override
   Widget build(BuildContext context) {
 
     return Container(
-      height: height,
       padding: EdgeInsets.fromLTRB(12, 12, 6, 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -35,6 +34,7 @@ class GraphContainer extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -43,7 +43,7 @@ class GraphContainer extends StatelessWidget {
               titleWidget,
             ],
           ),
-          graph,
+          AspectRatio(aspectRatio: sizeModifier, child: graph),
         ],
       ),
     );

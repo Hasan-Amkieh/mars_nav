@@ -31,6 +31,11 @@ class Main { // This class holds all the general variables to the interface as a
   static bool isRoverCharging = false;
   static String roverBatteryRemainingTime = "1h 3m";
 
+  // atmosphere:
+  static double humidity = 10;
+  static double temperature = 90;
+  static double airPressure = 50;
+
   // gas sensors:
   static double MQ_8_value = 1000;
   static double MQ_135_value = 700;
