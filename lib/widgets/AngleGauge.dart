@@ -3,8 +3,11 @@ import 'package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart';
 
 class AngleGauge extends StatefulWidget {
 
-  AngleGauge({required this.angle});
+  AngleGauge({required this.angle, required this.color, required this.thickness, required this.height});
   double angle;
+  Color color;
+  double thickness;
+  double height;
 
   @override
   State<StatefulWidget> createState() {
@@ -69,29 +72,28 @@ class AngleGaugeState extends State<AngleGauge> with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 250,
+      height: widget.height,
       child: Center(
         child: AnimatedBuilder(
           animation: _animation,
           builder: (context, child) {
             return LinearGauge(
-
               gaugeOrientation: GaugeOrientation.vertical,
               start: -180,
               end: 180,
               steps: 60,
               valueBar: [
                 ValueBar(
-                  color: const Color(0xff00e5ff),
-                  valueBarThickness: 8,
+                  color: widget.color,
+                  valueBarThickness: widget.thickness,
                   value: _animation.value,
                   position: ValueBarPosition.center,
-                  borderRadius: 20,
+                  borderRadius: 12,
                 )
               ],
               enableGaugeAnimation: true,
               animationDuration: 1000,
-              linearGaugeBoxDecoration: const LinearGaugeBoxDecoration(thickness: 8),
+              linearGaugeBoxDecoration: LinearGaugeBoxDecoration(thickness: widget.thickness),
               rulers: RulerStyle(
                 textStyle: const TextStyle(color: Color(0xffcccccc), fontSize: 10),
                 primaryRulerColor: const Color(0xff5ad1e6),

@@ -26,17 +26,23 @@ class Main { // This class holds all the general variables to the interface as a
   static const double iconSize = 20.0;
   static const pageIndexToName = ["Sensory", "Imagery", "History", "Commands", "Command Shell", "Settings"];
 
-  // Battery Related Rover:
+  // Battery in Rover:
   static double batteryLevel = 95;
   static bool isRoverCharging = false;
   static String roverBatteryRemainingTime = "1h 3m";
 
-  // atmosphere:
+  // atmosphere in Drone (used for both drone and rover):
   static double humidity = 10;
   static double temperature = 90;
   static double airPressure = 50;
 
-  // gas sensors:
+  // IMU sensor in Rover: -180 - 180 degrees
+  static double xAngle = 100;
+  static double yAngle = 20;
+  static double zAngle = -160;
+  static double speed = 0; // in m/s
+
+  // gas sensors: 100 ppm - 10000 ppm
   static double MQ_8_value = 1000;
   static double MQ_135_value = 700;
   static double MQ_2_value = 2000;

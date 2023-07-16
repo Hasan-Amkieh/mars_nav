@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mars_nav/widgets/AngleGauge.dart';
 import 'package:mars_nav/widgets/GraphContainer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -22,6 +23,8 @@ class StringData {
 class SensoryPage extends StatelessWidget {
   SensoryPage({value});
 
+  static TextStyle graphContainerStyle = const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20);
+
   static Widget separator = const SizedBox(width: 26);
 
   @override
@@ -38,6 +41,9 @@ class SensoryPage extends StatelessWidget {
               children: [
                 Flexible(flex: 6, child: GraphContainer(
                   sizeModifier: 4.9,
+                  detailsWidget: TextButton.icon(
+                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  ),
                   iconWidget: Image.asset("lib/icons/chemistry-white.png", height: Main.iconSize * 3, width: Main.iconSize * 3),
                   titleWidget: const Text("Gases", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
                   graph: SfCartesianChart(
@@ -162,8 +168,11 @@ class SensoryPage extends StatelessWidget {
                 separator,
                 Flexible(flex: 4, child: GraphContainer(
                   sizeModifier: 2.2,
+                  detailsWidget: TextButton.icon(
+                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  ),
                   iconWidget: Image.asset("lib/icons/wind-white.png", height: Main.iconSize * 2, width: Main.iconSize * 2),
-                  titleWidget: const Text("Air", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                  titleWidget: Text("Atmosphere", style: graphContainerStyle),
                   graph: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     mainAxisSize: MainAxisSize.max,
@@ -198,71 +207,111 @@ class SensoryPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SfCircularChart(
-                              series: <CircularSeries>[
-                                RadialBarSeries<StringData, String>(
-                                  radius: "95",
-                                  innerRadius: "85",
-                                  maximumValue: 100,
-                                  animationDuration: 400,
-                                  dataSource: <StringData>[
-                                    StringData('Humidity', Main.humidity),
-                                  ],
-                                  cornerStyle: CornerStyle.endCurve,
-                                  xValueMapper: (StringData data, _) => data.x,
-                                  yValueMapper: (StringData data, _) => data.y,
-                                  trackColor: Colors.blue,
-                                  trackOpacity: 0.3,
-                                  pointColorMapper: (StringData data, _) => Colors.blue,
-                                ),
-                              ]
-                          ),
-                          SfCircularChart(
-                              series: <CircularSeries>[
-                                RadialBarSeries<StringData, String>(
-                                  radius: "105",
-                                  innerRadius: "95",
-                                  maximumValue: 100,
-                                  animationDuration: 400,
-                                  dataSource: <StringData>[
-                                    StringData('Temperature', Main.temperature),
-                                  ],
-                                  cornerStyle: CornerStyle.endCurve,
-                                  xValueMapper: (StringData data, _) => data.x,
-                                  yValueMapper: (StringData data, _) => data.y,
-                                  trackColor: Colors.red,
-                                  trackOpacity: 0.3,
-                                  pointColorMapper: (StringData data, _) => Colors.red,
-                                ),
-                              ]
-                          ),
-                          SfCircularChart(
-                              series: <CircularSeries>[
-                                RadialBarSeries<StringData, String>(
-                                  radius: "115",
-                                  innerRadius: "105",
-                                  maximumValue: 100,
-                                  animationDuration: 400,
-                                  dataSource: <StringData>[
-                                    StringData('Air Pressure', Main.airPressure),
-                                  ],
-                                  cornerStyle: CornerStyle.endCurve,
-                                  xValueMapper: (StringData data, _) => data.x,
-                                  yValueMapper: (StringData data, _) => data.y,
-                                  trackColor: Colors.green,
-                                  trackOpacity: 0.3,
-                                  pointColorMapper: (StringData data, _) => Colors.green,
-                                ),
-                              ]
-                          ),
-                        ],
+                      FittedBox(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SfCircularChart(
+                                margin: EdgeInsets.zero,
+                                series: <CircularSeries>[
+                                  RadialBarSeries<StringData, String>(
+                                    radius: (MediaQuery.of(context).size.height * 0.055).toInt().toString(),
+                                    innerRadius: (MediaQuery.of(context).size.height * 0.042).toInt().toString(),
+                                    maximumValue: 100,
+                                    animationDuration: 800,
+                                    dataSource: <StringData>[
+                                      StringData('Humidity', Main.humidity),
+                                    ],
+                                    cornerStyle: CornerStyle.endCurve,
+                                    xValueMapper: (StringData data, _) => data.x,
+                                    yValueMapper: (StringData data, _) => data.y,
+                                    trackColor: Colors.blue,
+                                    trackOpacity: 0.3,
+                                    pointColorMapper: (StringData data, _) => Colors.blue,
+                                  ),
+                                ]
+                            ),
+                            SfCircularChart(
+                                margin: EdgeInsets.zero,
+                                series: <CircularSeries>[
+                                  RadialBarSeries<StringData, String>(
+                                    radius: (MediaQuery.of(context).size.height * 0.075).toInt().toString(),
+                                    innerRadius: (MediaQuery.of(context).size.height * 0.062).toInt().toString(),
+                                    maximumValue: 100,
+                                    animationDuration: 400,
+                                    dataSource: <StringData>[
+                                      StringData('Temperature', Main.temperature),
+                                    ],
+                                    cornerStyle: CornerStyle.endCurve,
+                                    xValueMapper: (StringData data, _) => data.x,
+                                    yValueMapper: (StringData data, _) => data.y,
+                                    trackColor: Colors.red,
+                                    trackOpacity: 0.3,
+                                    pointColorMapper: (StringData data, _) => Colors.red,
+                                  ),
+                                ]
+                            ),
+                            SfCircularChart(
+                                margin: EdgeInsets.zero,
+                                series: <CircularSeries>[
+                                  RadialBarSeries<StringData, String>(
+                                    radius: (MediaQuery.of(context).size.height * 0.095).toInt().toString(),
+                                    innerRadius: (MediaQuery.of(context).size.height * 0.082).toInt().toString(),
+                                    maximumValue: 100,
+                                    animationDuration: 400,
+                                    dataSource: <StringData>[
+                                      StringData('Air Pressure', Main.airPressure),
+                                    ],
+                                    cornerStyle: CornerStyle.endCurve,
+                                    xValueMapper: (StringData data, _) => data.x,
+                                    yValueMapper: (StringData data, _) => data.y,
+                                    trackColor: Colors.green,
+                                    trackOpacity: 0.3,
+                                    pointColorMapper: (StringData data, _) => Colors.green,
+                                  ),
+                                ]
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 )),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(flex:3, child: GraphContainer(
+                  detailsWidget: TextButton.icon(
+                    label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  ),
+                  sizeModifier: 1.0,
+                  titleWidget: Text("Speed", style: graphContainerStyle),
+                  iconWidget: Image.asset("lib/icons/speed-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  graph: Container(),
+                )
+                ),
+                separator,
+                Flexible(flex:6, child: GraphContainer(
+                  detailsWidget: TextButton.icon(
+                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  ),
+                  sizeModifier: 1.0,
+                  titleWidget: Text("Rover Angles", style: graphContainerStyle),
+                  iconWidget: Image.asset("lib/icons/angles-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  graph: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AngleGauge(angle: Main.xAngle, color: const Color(0xFF00E676), thickness: 10, height: 250),
+                      const SizedBox(width: 60),
+                      AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 250),
+                      const SizedBox(width: 60),
+                      AngleGauge(angle: Main.zAngle, color: const Color(0xFF42A5F5), thickness: 10, height: 250),
+                    ],
+                  ),
+                ))
               ],
             ),
           ],
