@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mars_nav/widgets/AngleGauge.dart';
 import 'package:mars_nav/widgets/GraphContainer.dart';
+import 'package:new_flutter_gauge/widgets/flutter_gauge_widget.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../main.dart';
@@ -29,6 +30,7 @@ class SensoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Main.speed = 0.6;
     return SingleChildScrollView(
       child: Container(
         padding: const EdgeInsets.fromLTRB(6, 10, 10, 10),
@@ -290,11 +292,24 @@ class SensoryPage extends StatelessWidget {
                   sizeModifier: 1.0,
                   titleWidget: Text("Speed", style: graphContainerStyle),
                   iconWidget: Image.asset("lib/icons/speed-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
-                  graph: Container(),
+                  graph: FlutterGauge(
+                    index: Main.speed,
+                    end: 1,
+                    hand: Hand.short,
+                    number: Number.endAndCenterAndStart,
+                    secondsMarker: SecondsMarker.all,
+                    textStyle: TextStyle(
+                      color: Colors.white
+                    ),
+                    counterStyle: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                    ),
+                  ),
                 )
                 ),
                 separator,
-                Flexible(flex:6, child: GraphContainer(
+                Flexible(flex:3, child: GraphContainer(
                   detailsWidget: TextButton.icon(
                       label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
                   ),
@@ -302,16 +317,45 @@ class SensoryPage extends StatelessWidget {
                   titleWidget: Text("Rover Angles", style: graphContainerStyle),
                   iconWidget: Image.asset("lib/icons/angles-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
                   graph: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AngleGauge(angle: Main.xAngle, color: const Color(0xFF00E676), thickness: 10, height: 250),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AngleGauge(angle: Main.xAngle, color: const Color(0xFF00E676), thickness: 10, height: 250),
+                          Text("X-Axis\n${Main.xAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        ],
+                      ),
                       const SizedBox(width: 60),
-                      AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 250),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 250),
+                          Text("Y-Axis\n${Main.yAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        ],
+                      ),
                       const SizedBox(width: 60),
-                      AngleGauge(angle: Main.zAngle, color: const Color(0xFF42A5F5), thickness: 10, height: 250),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AngleGauge(angle: Main.zAngle, color: const Color(0xFF42A5F5), thickness: 10, height: 250),
+                          Text("Y-Axis\n${Main.zAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        ],
+                      ),
                     ],
                   ),
-                ))
+                )),
+                separator,
+                Flexible(flex:4, child: GraphContainer(
+                  detailsWidget: TextButton.icon(
+                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  ),
+                  sizeModifier: 1.0,
+                  titleWidget: Text("Air Particles", style: graphContainerStyle),
+                  iconWidget: Image.asset("lib/icons/particles-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  graph: Container(),
+                )),
               ],
             ),
           ],

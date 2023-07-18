@@ -43,6 +43,7 @@ dependencies:
   geekyants_flutter_gauges: 1.0.1
   desktop_multi_window: ^0.2.0 # TODO: test it
   influxdb_client: 2.9.0
+  new_flutter_gauge: 1.0.0
 
 msix_config:
   display_name: mars_nav

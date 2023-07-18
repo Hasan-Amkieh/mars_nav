@@ -251,6 +251,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.15.0"
+  new_flutter_gauge:
+    dependency: "direct main"
+    description:
+      name: new_flutter_gauge
+      sha256: "46447de767a87fef1163d8712b72f9c6521287856f51aa8c011de54bed4b16ce"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   package_config:
     dependency: transitive
     description:
@@ -291,6 +299,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  rxdart:
+    dependency: transitive
+    description:
+      name: rxdart
+      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.27.7"
   serial_port_win32:
     dependency: "direct main"
     description:

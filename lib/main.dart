@@ -40,7 +40,7 @@ class Main { // This class holds all the general variables to the interface as a
   static double xAngle = 100;
   static double yAngle = 20;
   static double zAngle = -160;
-  static double speed = 0; // in m/s
+  static double speed = 0.4; // in m/s
 
   // gas sensors: 100 ppm - 10000 ppm
   static double MQ_8_value = 1000;
