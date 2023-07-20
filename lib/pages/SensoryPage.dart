@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gauge_indicator/gauge_indicator.dart';
 import 'package:mars_nav/widgets/AngleGauge.dart';
 import 'package:mars_nav/widgets/GraphContainer.dart';
+import 'package:mars_nav/widgets/NoConnection.dart';
 import 'package:new_flutter_gauge/widgets/flutter_gauge_widget.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -30,7 +32,6 @@ class SensoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Main.speed = 0.6;
     return SingleChildScrollView(
       child: Container(
         padding: const EdgeInsets.fromLTRB(6, 10, 10, 10),
@@ -42,9 +43,10 @@ class SensoryPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Flexible(flex: 6, child: GraphContainer(
-                  sizeModifier: 4.9,
-                  detailsWidget: TextButton.icon(
-                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  sizeModifier: 4.0,
+                  detailsWidget: IconButton(
+                    icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    onPressed: () {},
                   ),
                   iconWidget: Image.asset("lib/icons/chemistry-white.png", height: Main.iconSize * 3, width: Main.iconSize * 3),
                   titleWidget: const Text("Gases", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
@@ -86,10 +88,6 @@ class SensoryPage extends StatelessWidget {
                         isVisible: false,
                     ),
                     primaryYAxis: NumericAxis(
-                      // axisLabelFormatter: (axisLabelRenderArgs) {
-                      //   print(axisLabelRenderArgs.text);
-                      //   return ChartAxisLabel(axisLabelRenderArgs.text, TextStyle(color: Colors.white));
-                      // },
                       isVisible: false,
                       minimum: 100,
                       maximum: 10000,
@@ -164,14 +162,32 @@ class SensoryPage extends StatelessWidget {
                         borderWidth: 3,
                         name: 'CO  ${Main.MQ_7_value} ppm',
                       ),
+                      SplineAreaSeries<TimeData, DateTime>(
+                        markerSettings: MarkerSettings(isVisible: true),
+                        dataSource: <TimeData>[
+                          TimeData(DateTime(2023, 1, 1), 1050),
+                          TimeData(DateTime(2023, 2, 1), 2050),
+                          TimeData(DateTime(2023, 3, 1), 9000),
+                          TimeData(DateTime(2023, 4, 1), 5850),
+                          TimeData(DateTime(2023, 5, 1), 1000),
+                          TimeData(DateTime(2023, 6, 1), 1590),
+                        ],
+                        xValueMapper: (TimeData data, _) => data.x,
+                        yValueMapper: (TimeData data, _) => data.y,
+                        color: const Color(0xFFB19CD9).withOpacity(0.1),
+                        borderColor: const Color(0xFFB19CD9),
+                        borderWidth: 3,
+                        name: 'CO2  ${Main.MQ_7_value} ppm',
+                      ),
                     ],
                   ),
                 )),
                 separator,
                 Flexible(flex: 4, child: GraphContainer(
                   sizeModifier: 2.2,
-                  detailsWidget: TextButton.icon(
-                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  detailsWidget: IconButton(
+                    icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    onPressed: () {},
                   ),
                   iconWidget: Image.asset("lib/icons/wind-white.png", height: Main.iconSize * 2, width: Main.iconSize * 2),
                   titleWidget: Text("Atmosphere", style: graphContainerStyle),
@@ -286,8 +302,9 @@ class SensoryPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Flexible(flex:3, child: GraphContainer(
-                  detailsWidget: TextButton.icon(
-                    label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  detailsWidget: IconButton(
+                    icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    onPressed: () {},
                   ),
                   sizeModifier: 1.0,
                   titleWidget: Text("Speed", style: graphContainerStyle),
@@ -310,8 +327,9 @@ class SensoryPage extends StatelessWidget {
                 ),
                 separator,
                 Flexible(flex:3, child: GraphContainer(
-                  detailsWidget: TextButton.icon(
-                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  detailsWidget: IconButton(
+                    icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    onPressed: () {},
                   ),
                   sizeModifier: 1.0,
                   titleWidget: Text("Rover Angles", style: graphContainerStyle),
@@ -340,7 +358,7 @@ class SensoryPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           AngleGauge(angle: Main.zAngle, color: const Color(0xFF42A5F5), thickness: 10, height: 250),
-                          Text("Y-Axis\n${Main.zAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                          Text("Z-Axis\n${Main.zAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
                         ],
                       ),
                     ],
@@ -348,14 +366,561 @@ class SensoryPage extends StatelessWidget {
                 )),
                 separator,
                 Flexible(flex:4, child: GraphContainer(
-                  detailsWidget: TextButton.icon(
-                      label: const Text("Older Data"), icon: Image.asset("lib/icons/data-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5), onPressed: () {}
+                  detailsWidget: IconButton(
+                    icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    onPressed: () {},
                   ),
-                  sizeModifier: 1.0,
+                  sizeModifier: 1.9,
                   titleWidget: Text("Air Particles", style: graphContainerStyle),
                   iconWidget: Image.asset("lib/icons/particles-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
-                  graph: Container(),
+                  graph: SfCartesianChart(
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      builder: (data, point, series, pointIndex, seriesIndex) {
+                        var data_ = (data as TimeData);
+                        return Container(
+                            padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                            child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: (series as SplineAreaSeries<TimeData, DateTime>).borderColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                      "${data_.x.hour}:${data_.x.minute}:${data_.x.second} , ${data_.y}", style: const TextStyle(color: Colors.white)
+                                  )
+                                ]
+                            )
+                        );
+                      },
+                    ),
+                    plotAreaBorderColor: Colors.transparent,
+                    legend: const Legend(
+                      overflowMode: LegendItemOverflowMode.wrap,
+                      isVisible: true,
+                      position: LegendPosition.left,
+                      textStyle: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    primaryXAxis: DateTimeAxis(
+                      isVisible: false,
+                    ),
+                    primaryYAxis: NumericAxis(
+                      isVisible: false,
+                      minimum: 0,
+                      maximum: 1000,
+                    ),
+                    borderWidth: 0,
+                    series: <SplineAreaSeries>[
+                      SplineAreaSeries<TimeData, DateTime>(
+                        markerSettings: MarkerSettings(isVisible: true),
+                        dataSource: <TimeData>[
+                          TimeData(DateTime(2023, 1, 1), 405),
+                          TimeData(DateTime(2023, 2, 1), 600),
+                          TimeData(DateTime(2023, 3, 1), 500),
+                          TimeData(DateTime(2023, 4, 1), 750),
+                          TimeData(DateTime(2023, 5, 1), 700),
+                          TimeData(DateTime(2023, 6, 1), 960),
+                        ],
+                        xValueMapper: (TimeData data, _) => data.x,
+                        yValueMapper: (TimeData data, _) => data.y,
+                        color: const Color(0xFFFF6B00).withOpacity(0.1),
+                        borderColor: const Color(0xFFFF6B00),
+                        borderWidth: 3,
+                        name: 'PM1.0  ${Main.PM1_0_concentration} µg/m³',
+                      ),
+                      SplineAreaSeries<TimeData, DateTime>(
+                        markerSettings: MarkerSettings(isVisible: true),
+                        dataSource: <TimeData>[
+                          TimeData(DateTime(2023, 1, 1), 550),
+                          TimeData(DateTime(2023, 2, 1), 700),
+                          TimeData(DateTime(2023, 3, 1), 650),
+                          TimeData(DateTime(2023, 4, 1), 800),
+                          TimeData(DateTime(2023, 5, 1), 700),
+                          TimeData(DateTime(2023, 6, 1), 905),
+                        ],
+                        xValueMapper: (TimeData data, _) => data.x,
+                        yValueMapper: (TimeData data, _) => data.y,
+                        color: const Color(0xFF00FFD4).withOpacity(0.1),
+                        borderColor: const Color(0xFF00FFD4),
+                        borderWidth: 3,
+                        name: 'PM2.5 ${Main.PM2_5_concentration} µg/m³',
+                      ),
+                      SplineAreaSeries<TimeData, DateTime>(
+                        markerSettings: MarkerSettings(isVisible: true),
+                        dataSource: <TimeData>[
+                          TimeData(DateTime(2023, 1, 1), 350),
+                          TimeData(DateTime(2023, 2, 1), 550),
+                          TimeData(DateTime(2023, 3, 1), 500),
+                          TimeData(DateTime(2023, 4, 1), 650),
+                          TimeData(DateTime(2023, 5, 1), 600),
+                          TimeData(DateTime(2023, 6, 1), 150),
+                        ],
+                        xValueMapper: (TimeData data, _) => data.x,
+                        yValueMapper: (TimeData data, _) => data.y,
+                        color: const Color(0xFFFFD500).withOpacity(0.1),
+                        borderColor: const Color(0xFFFFD500),
+                        borderWidth: 3,
+                        name: 'PM10.0  ${Main.PM10_0_concentration} µg/m³',
+                      ),
+                    ],
+                  ),
                 )),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: GraphContainer(
+                    detailsWidget: IconButton(
+                      icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                      onPressed: () {},
+                    ),
+                    iconWidget: Image.asset("lib/icons/circuitry-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                    titleWidget: Text("Computing Resources", style: graphContainerStyle),
+                    sizeModifier: 1.2,
+                    graph: Main.roverStatus == RoverState.offline ? NoConnectionWidget(msg: "Halo!") : GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      child: SfCartesianChart(
+                        trackballBehavior: TrackballBehavior(
+                          enable: true,
+                          lineType: TrackballLineType.vertical,
+                          activationMode: ActivationMode.singleTap,
+                          builder: (context, trackballDetails) {
+                            double number = trackballDetails.series?.dataSource[trackballDetails.pointIndex ?? 0].y;
+                            String number_str = "";
+                            String name = trackballDetails.series?.name ?? "ERROR";
+                            if (name.startsWith("CPU")) {
+                              name = "CPU";
+                              number = number * 100;
+                              number_str = "${number.toStringAsPrecision(3)}%";
+                            } else if (name.startsWith("GPU")) {
+                              name = "GPU";
+                              number = number * 100;
+                              number_str = "${number.toStringAsPrecision(3)}%";
+                            } else if (name.contains("RAM")) {
+                              name = "RAM";
+                              number = number * 4;
+                              number_str = "${number.toStringAsPrecision(3)} GB";
+                            }
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              padding: EdgeInsets.all(6),
+                              child: Text(
+                                '$name $number_str',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          },
+                          tooltipSettings: InteractiveTooltip(
+                            enable: true,
+                            color: Colors.grey[900],
+                            borderWidth: 4,
+                            arrowWidth: 2,
+                            arrowLength: 6
+                          ),
+                          markerSettings: const TrackballMarkerSettings(
+                            markerVisibility: TrackballVisibilityMode.visible,
+                            shape: DataMarkerType.diamond,
+                            width: 6,
+                            height: 6,
+                            borderWidth: 2,
+                          ),
+                        ),
+                        primaryXAxis: DateTimeAxis(
+                          isVisible: false,
+                        ),
+                        plotAreaBorderWidth: 0,
+                        legend: Legend(
+                          isVisible: true,
+                          position: LegendPosition.bottom,
+                          textStyle: TextStyle(color: Colors.white, fontSize: 16),
+                          overflowMode: LegendItemOverflowMode.wrap
+                        ),
+                        primaryYAxis: NumericAxis(
+                        isVisible: false,
+                        minimum: 0,
+                        maximum: 1,
+                        ),
+                        series: <ChartSeries>[
+                          StepLineSeries<TimeData, DateTime>(
+                            dataSource: [
+                              TimeData(DateTime(2001, 1, 1), 0.19),
+                              TimeData(DateTime(2001, 1, 2), 0.1),
+                              TimeData(DateTime(2001, 1, 3), 0.659),
+                              TimeData(DateTime(2001, 1, 4), 0.57),
+                              TimeData(DateTime(2001, 1, 5), 0.96),
+                            ],
+                            xValueMapper: (TimeData data, _) => data.x,
+                            yValueMapper: (TimeData data, _) => data.y,
+                            name: 'CPU Utilization ${Main.cpuUtil * 100}%',
+                            color: const Color(0xFF4b87b9),
+                          ),
+                          StepLineSeries<TimeData, DateTime>(
+                            dataSource: [
+                              TimeData(DateTime(2001, 1, 1), 0.1),
+                              TimeData(DateTime(2001, 1, 2), 0.4),
+                              TimeData(DateTime(2001, 1, 3), 0.3),
+                              TimeData(DateTime(2001, 1, 4), 0.23),
+                              TimeData(DateTime(2001, 1, 5), 0.13),
+                            ],
+                            xValueMapper: (TimeData data, _) => data.x,
+                            yValueMapper: (TimeData data, _) => data.y,
+                            name: 'GPU Utilization ${Main.gpuUtil * 100}%',
+                            color: const Color(0xFF8a596d),
+                          ),
+                          StepLineSeries<TimeData, DateTime>(
+                            dataSource: [
+                              TimeData(DateTime(2001, 1, 1), 0.5),
+                              TimeData(DateTime(2001, 1, 2), 0.6),
+                              TimeData(DateTime(2001, 1, 3), 0.4),
+                              TimeData(DateTime(2001, 1, 4), 0.3),
+                              TimeData(DateTime(2001, 1, 5), 0.1),
+                            ],
+                            xValueMapper: (TimeData data, _) => data.x,
+                            yValueMapper: (TimeData data, _) => data.y,
+                            name: 'Used RAM ${Main.usedRam} GB',
+                            color: const Color(0xFFf67280),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                separator,
+                Flexible(
+                  flex: 4,
+                  child: GraphContainer(
+                    iconWidget: Image.asset("lib/icons/bolts-white.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    titleWidget: Text("Power Consumption", style: graphContainerStyle),
+                    detailsWidget: IconButton(
+                      icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                      onPressed: () {},
+                    ),
+                    sizeModifier: 1.4,
+                    graph: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      child: SfCartesianChart(
+                        trackballBehavior: TrackballBehavior(
+                          enable: true,
+                          lineType: TrackballLineType.vertical,
+                          activationMode: ActivationMode.singleTap,
+                          builder: (context, trackballDetails) {
+                            double number = trackballDetails.series?.dataSource[trackballDetails.pointIndex ?? 0].y;
+                            String number_str = "";
+                            String name = trackballDetails.series?.name ?? "ERROR";
+                            switch (trackballDetails.seriesIndex) {
+                              case 0:
+                                name = "batt volt";
+                                number = number * 26;
+                                number_str = "${number.toStringAsPrecision(3)} V";
+                                break;
+                              case 1:
+                                name = "motors";
+                                number = number * 150;
+                                number_str = "${number.toStringAsPrecision(3)} A";
+                                break;
+                              case 2:
+                                name = "electronics";
+                                number = number * 5;
+                                number_str = "${number.toStringAsPrecision(3)} A";
+                                break;
+                              case 3:
+                                name = "power";
+                                number = number * 600;
+                                number_str = "${number.toStringAsPrecision(3)} W";
+                                break;
+                            }
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              padding: const EdgeInsets.all(6),
+                              child: Text(
+                                '$name $number_str',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          },
+                          tooltipSettings: InteractiveTooltip(
+                              enable: true,
+                              color: Colors.grey[900],
+                              borderWidth: 4,
+                              arrowWidth: 2,
+                              arrowLength: 6
+                          ),
+                          markerSettings: const TrackballMarkerSettings(
+                            markerVisibility: TrackballVisibilityMode.visible,
+                            shape: DataMarkerType.diamond,
+                            width: 6,
+                            height: 6,
+                            borderWidth: 2,
+                          ),
+                        ),
+                        primaryXAxis: DateTimeAxis(
+                          isVisible: false,
+                        ),
+                        plotAreaBorderWidth: 0,
+                        legend: const Legend(
+                            isVisible: true,
+                            position: LegendPosition.bottom,
+                            textStyle: TextStyle(color: Colors.white, fontSize: 16),
+                            overflowMode: LegendItemOverflowMode.wrap
+                        ),
+                        primaryYAxis: NumericAxis(
+                          isVisible: false,
+                          minimum: 0,
+                          maximum: 1,
+                        ),
+                        series: <ChartSeries>[
+                          StepLineSeries<TimeData, DateTime>(
+                            dataSource: [
+                              TimeData(DateTime(2001, 1, 1), 0.19),
+                              TimeData(DateTime(2001, 1, 2), 0.1),
+                              TimeData(DateTime(2001, 1, 3), 0.659),
+                              TimeData(DateTime(2001, 1, 4), 0.57),
+                              TimeData(DateTime(2001, 1, 5), 0.96),
+                            ],
+                            xValueMapper: (TimeData data, _) => data.x,
+                            yValueMapper: (TimeData data, _) => data.y,
+                            name: 'Battery Voltage ${Main.batteryVoltRover} V',
+                            color: const Color(0xFF7EB8DA),
+                          ),
+                          StepLineSeries<TimeData, DateTime>(
+                            dataSource: [
+                              TimeData(DateTime(2001, 1, 1), 0.1),
+                              TimeData(DateTime(2001, 1, 2), 0.4),
+                              TimeData(DateTime(2001, 1, 3), 0.3),
+                              TimeData(DateTime(2001, 1, 4), 0.23),
+                              TimeData(DateTime(2001, 1, 5), 0.13),
+                            ],
+                            xValueMapper: (TimeData data, _) => data.x,
+                            yValueMapper: (TimeData data, _) => data.y,
+                            name: 'Motors Current ${Main.motorsCurrent} A',
+                            color: const Color(0xFFAEC8E5),
+                          ),
+                          StepLineSeries<TimeData, DateTime>(
+                            dataSource: [
+                              TimeData(DateTime(2001, 1, 1), 0.5),
+                              TimeData(DateTime(2001, 1, 2), 0.6),
+                              TimeData(DateTime(2001, 1, 3), 0.4),
+                              TimeData(DateTime(2001, 1, 4), 0.3),
+                              TimeData(DateTime(2001, 1, 5), 0.1),
+                            ],
+                            xValueMapper: (TimeData data, _) => data.x,
+                            yValueMapper: (TimeData data, _) => data.y,
+                            name: 'Electronics Current ${Main.electronicsCurrent} A',
+                            color: const Color(0xFF85CCB0),
+                          ),
+                          StepLineSeries<TimeData, DateTime>(
+                            dataSource: [
+                              TimeData(DateTime(2001, 1, 1), 0.48),
+                              TimeData(DateTime(2001, 1, 2), 0.25),
+                              TimeData(DateTime(2001, 1, 3), 0.49),
+                              TimeData(DateTime(2001, 1, 4), 0.15),
+                              TimeData(DateTime(2001, 1, 5), 0.756),
+                            ],
+                            xValueMapper: (TimeData data, _) => data.x,
+                            yValueMapper: (TimeData data, _) => data.y,
+                            name: 'Power Consumption ${Main.powerConsumption} W',
+                            color: const Color(0xFFECA26D),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                separator,
+                Flexible(
+                  flex: 3,
+                  child: GraphContainer(
+                    iconWidget: Image.asset("lib/icons/signal-white.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    titleWidget: Text("Signal Strength", style: graphContainerStyle),
+                    detailsWidget: IconButton(
+                      icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                      onPressed: () {},
+                    ),
+                    sizeModifier: 2.0,
+                    graph: Column(
+                      children: [
+                        const SizedBox(height: 12,),
+                        Expanded(
+                          child: AnimatedRadialGauge(
+                            duration: const Duration(seconds: 1),
+                            curve: Curves.elasticOut,
+                            value: Main.signalStrengthRover + 90,
+                            axis: GaugeAxis(
+                                min: 0,
+                                max: 60,
+                                degrees: 180,
+                              pointer: GaugePointer.needle(
+                                width: 16,
+                                height: 80,
+                                borderRadius: 16,
+                                color: Colors.black45,
+                              ),
+                                progressBar: GaugeProgressBar.rounded(
+                                  color: (Main.signalStrengthRover + 90) < 20 ? Colors.redAccent : ((Main.signalStrengthRover + 90) < 40 ? Colors.yellowAccent : Colors.green),
+                                ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: Main.iconSize,
+                              height: Main.iconSize,
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (Main.signalStrengthRover + 90) < 20 ? Colors.redAccent : ((Main.signalStrengthRover + 90) < 40 ? Colors.yellowAccent : Colors.green).withOpacity(0.36),
+                                    blurRadius: 30,
+                                  )
+                                ],
+                                shape: BoxShape.circle,
+                                color: (Main.signalStrengthRover + 90) < 20 ? Colors.redAccent : ((Main.signalStrengthRover + 90) < 40 ? Colors.yellowAccent : Colors.green),
+                              ),
+                            ),
+                            const SizedBox(width: 6,),
+                            Text(
+                                "${(Main.signalStrengthRover + 90) < 20 ? "Weak" : ((Main.signalStrengthRover + 90) < 40 ? "Good" : "Strong")}  ${Main.signalStrengthRover} dB",
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))
+                          ],
+                        ),
+                      ],
+                    ),
+                ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: GraphContainer(
+                    detailsWidget: IconButton(
+                      icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                      onPressed: () {},
+                    ),
+                    iconWidget: Image.asset("lib/icons/light-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                    titleWidget: Text("Light", style: graphContainerStyle),
+                    sizeModifier: 1.0,
+                    graph: SfCartesianChart(
+                      tooltipBehavior: TooltipBehavior(
+                        enable: true,
+                        builder: (data, point, series, pointIndex, seriesIndex) {
+                          var data_ = (data as TimeData);
+                          return Container(
+                              padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                              child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: (series as SplineSeries<TimeData, DateTime>).color,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                        "${data_.x.hour}:${data_.x.minute}:${data_.x.second} , ${data_.y}", style: const TextStyle(color: Colors.white)
+                                    )
+                                  ]
+                              )
+                          );
+                        },
+                      ),
+                      plotAreaBorderColor: Colors.transparent,
+                      legend: const Legend(
+                        overflowMode: LegendItemOverflowMode.wrap,
+                        isVisible: true,
+                        position: LegendPosition.bottom,
+                        textStyle: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      primaryXAxis: DateTimeAxis(
+                        isVisible: false,
+                      ),
+                      primaryYAxis: NumericAxis(
+                        isVisible: false,
+                        minimum: 0,
+                        maximum: 1000,
+                      ),
+                      borderWidth: 0,
+                      series: <SplineSeries>[
+                        SplineSeries<TimeData, DateTime>(
+                          markerSettings: MarkerSettings(isVisible: true),
+                          dataSource: <TimeData>[
+                            TimeData(DateTime(2023, 1, 1), 405),
+                            TimeData(DateTime(2023, 2, 1), 600),
+                            TimeData(DateTime(2023, 3, 1), 500),
+                            TimeData(DateTime(2023, 4, 1), 750),
+                            TimeData(DateTime(2023, 5, 1), 700),
+                            TimeData(DateTime(2023, 6, 1), 960),
+                          ],
+                          xValueMapper: (TimeData data, _) => data.x,
+                          yValueMapper: (TimeData data, _) => data.y,
+                          color: const Color(0xFF7EB8DA),
+                          // borderColor: const Color(0xFF7EB8DA),
+                          // borderWidth: 3,
+                          name: 'Visible Light Intensity  ${Main.visibleLightIntensity} lux',
+                        ),
+                        SplineSeries<TimeData, DateTime>(
+                          markerSettings: MarkerSettings(isVisible: true),
+                          dataSource: <TimeData>[
+                            TimeData(DateTime(2023, 1, 1), 550),
+                            TimeData(DateTime(2023, 2, 1), 700),
+                            TimeData(DateTime(2023, 3, 1), 650),
+                            TimeData(DateTime(2023, 4, 1), 800),
+                            TimeData(DateTime(2023, 5, 1), 700),
+                            TimeData(DateTime(2023, 6, 1), 905),
+                          ],
+                          xValueMapper: (TimeData data, _) => data.x,
+                          yValueMapper: (TimeData data, _) => data.y,
+                          color: const Color(0xFF85CCB0),
+                          // borderColor: const Color(0xFF85CCB0),
+                          // borderWidth: 3,
+                          name: 'UV Light Intensity ${Main.UVLightIntensity}',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 7,
+                  child: Visibility(
+                    visible: false,
+                    child: GraphContainer(
+                      detailsWidget: IconButton(
+                        icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                        onPressed: () {},
+                      ),
+                      iconWidget: Image.asset("lib/icons/light-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                      titleWidget: Text("Light", style: graphContainerStyle),
+                      sizeModifier: 1.0,
+                      graph: Container(),
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
@@ -364,3 +929,4 @@ class SensoryPage extends StatelessWidget {
     );
   }
 }
+

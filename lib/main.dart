@@ -29,28 +29,56 @@ class Main { // This class holds all the general variables to the interface as a
   // Battery in Rover:
   static double batteryLevel = 95;
   static bool isRoverCharging = false;
+  static double batteryVoltRover = 0.0; // out of 26V (6 cells)
+  static double electronicsCurrent = 2.0; // out of 5A
+  static double motorsCurrent = 70.0; // out of 150A
+  static double powerConsumption = 550; // out of 600W, Can't be calculated from the interface, has to be sent from the rover
   static String roverBatteryRemainingTime = "1h 3m";
 
   // atmosphere in Drone (used for both drone and rover):
+  static bool BME280Online = true;
   static double humidity = 10;
   static double temperature = 90;
   static double airPressure = 50;
 
-  // IMU sensor in Rover: -180 - 180 degrees
-  static double xAngle = 100;
+  // IMU sensor in Rover: 0 - 180 degrees
+  static bool IMUOnline = false; // TODO: Test it:
+  static double xAngle = 155;
   static double yAngle = 20;
-  static double zAngle = -160;
+  static double zAngle = 69;
   static double speed = 0.4; // in m/s
 
   // gas sensors: 100 ppm - 10000 ppm
+  static bool MQ_2_online = true;
+  static bool MQ_7_online = true;
+  static bool MQ_8_online = true;
+  static bool MQ_135_online = true;
   static double MQ_8_value = 1000;
   static double MQ_135_value = 700;
   static double MQ_2_value = 2000;
   static double MQ_7_value = 9600;
 
+  // particles sensor:
+  static bool PMS5003Online = true;
+  static double PM1_0_concentration = 100;
+  static double PM2_5_concentration = 10;
+  static double PM10_0_concentration = 50;
+
+  // main Processor properties:
+  static double cpuUtil = 0.9;
+  static double gpuUtil = 0.85;
+  static double usedRam = 3.6;
+
   // Battery Related Drone:
-  static double batteryVolt = 0.0;
+  static double batteryVoltDrone = 0.0;
   static bool isDroneCharging = true;
+
+  // signal Strength of Communication
+  static double signalStrengthRover = -45; // -30 (strongest) - -90 dB (weakest) (+90 for both values to make it positive for the graph)
+
+  // Light sensors:
+  static double UVLightIntensity = 120; // TODO: the range is to be determined with the unit
+  static double visibleLightIntensity = 10020; // b/w 0 and 40,000 lux
 
 
 }

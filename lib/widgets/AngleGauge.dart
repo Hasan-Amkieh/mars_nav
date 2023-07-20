@@ -79,7 +79,7 @@ class AngleGaugeState extends State<AngleGauge> with SingleTickerProviderStateMi
           builder: (context, child) {
             return LinearGauge(
               gaugeOrientation: GaugeOrientation.vertical,
-              start: -180,
+              start: 0,
               end: 180,
               steps: 60,
               valueBar: [
