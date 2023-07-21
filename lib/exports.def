@@ -1,0 +1,7 @@
+LIBRARY api
+EXPORTS
+    initSerial
+    readSerialPort
+    closeSerialPort
+    maximizeWindow
+    delArray

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_meedu_videoplayer/init_meedu_player.dart';
 import 'package:mars_nav/pages/CommandsPage.dart';
 import 'package:mars_nav/pages/HistoryPage.dart';
 import 'package:mars_nav/pages/ImageryPage.dart';
@@ -6,9 +7,11 @@ import 'package:mars_nav/pages/SensoryPage.dart';
 import 'package:mars_nav/pages/SettignsPage.dart';
 import 'package:mars_nav/pages/ShellPage.dart';
 import 'package:mars_nav/widgets/BatteryIcon.dart';
-import 'package:serial_port_win32/serial_port_win32.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:shimmer/shimmer.dart';
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
+import 'dart:convert';
 
 import 'dart:math' as math;
 
@@ -80,22 +83,53 @@ class Main { // This class holds all the general variables to the interface as a
   static double UVLightIntensity = 120; // TODO: the range is to be determined with the unit
   static double visibleLightIntensity = 10020; // b/w 0 and 40,000 lux
 
+  // C++ Code:
+  static late DynamicLibrary nativeApiLib;
 
+  static late Function initSerialPort;
+  static late Function readSerialPort;
+  static late Function delArray;
+  static late Function closeSerialPort;
+  static late Function maximizeWindow;
+
+}
+
+final class CArray extends Struct {
+  external Pointer<Utf8> arr;
+  @Int32()
+  external int len;
 }
 
 void main() {
 
-  // This will be used to connect the controller to control the rover/drone manually
-  if (SerialPort.getAvailablePorts().contains("COM5")) { // Might different than COM5,
-    final port = SerialPort("COM5", openNow: false);
-    port.openWithSettings(BaudRate: 115200);
+  Main.nativeApiLib = DynamicLibrary.open('api.dll');
+  Main.initSerialPort = Main.nativeApiLib.lookup<NativeFunction<Int Function(Pointer<Int8>)>>('initSerial').asFunction<int Function(Pointer<Int8>)>();
+  Main.readSerialPort = Main.nativeApiLib.lookup<NativeFunction<Pointer<CArray> Function(Int, Int, Int)>>('readSerialPort').asFunction<Pointer<CArray> Function(int, int, int)>();
+  Main.delArray = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<CArray>)>>('delArray').asFunction<void Function(Pointer<CArray>)>();
+  Main.closeSerialPort = Main.nativeApiLib.lookup<NativeFunction<Void Function(Int)>>('closeSerialPort').asFunction<void Function(int)>();
+  Main.maximizeWindow = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<Utf8>)>>('maximizeWindow').asFunction<void Function(Pointer<Utf8>)>();
 
-    port.readBytesSize = 3; // Means when 3 bytes are received in the buffer, then they are printed or the timeout has passed
-    port.readOnListenFunction = (value) {
-      print(value);
-    };
+  const portName = "COM6";
+  final Pointer<Int8> nativeString = calloc<Int8>(portName.length + 1);
+  final nativeStringArray = nativeString.asTypedList(portName.length + 1);
+  for (var i = 0; i < portName.length; i++) {
+    nativeStringArray[i] = portName.codeUnitAt(i);
+  }
+  nativeStringArray[portName.length] = 0;
+
+  int result = Main.initSerialPort(nativeString);
+  if (result == 0) {
+    Pointer<CArray> x;
+    while (true) {
+      x = Main.readSerialPort(0, 2, 0);
+      print(x.ref.arr.toDartString());
+      print(x.ref.len);
+    }
+  } else {
+    print("ERROR opening COM3!");
   }
 
+  initMeeduPlayer();
   runApp(Home());
 }
 
@@ -137,25 +171,16 @@ class Home extends StatelessWidget {
             appBar: isSmallScreen
                 ? AppBar(
               backgroundColor: canvasColor,
-              title: Text(Main.pageIndexToName[_controller.selectedIndex]),
-              leading: IconButton(
-                onPressed: () {
-                  // if (!Platform.isAndroid && !Platform.isIOS) {
-                  //   _controller.setExtended(true);
-                  // }
-                  _key.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu),
-              ),
+                  title: Text(Main.pageIndexToName[_controller.selectedIndex]),
             )
                 : null,
-            drawer: ExampleSidebarX(controller: _controller),
+            drawer: CustomSidebarX(controller: _controller),
             body: Row(
               children: [
-                if (!isSmallScreen) ExampleSidebarX(controller: _controller),
+                if (!isSmallScreen) CustomSidebarX(controller: _controller),
                 Expanded(
                   child: Center(
-                    child: _ScreensExample(
+                    child: MainNavigator(
                       controller: _controller,
                     ),
                   ),
@@ -169,8 +194,8 @@ class Home extends StatelessWidget {
   }
 }
 
-class ExampleSidebarX extends StatelessWidget {
-  const ExampleSidebarX({
+class CustomSidebarX extends StatelessWidget {
+  const CustomSidebarX({
     Key? key,
     required SidebarXController controller,
   })  : _controller = controller,
@@ -241,6 +266,15 @@ class ExampleSidebarX extends StatelessWidget {
         _controller.toggleExtended();
       },
       child: SidebarX(
+        headerDivider: Column(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset("lib/icons/team_logo.png"),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
         animationDuration: const Duration(milliseconds: 100),
         controller: _controller,
         showToggleButton: false,
@@ -356,8 +390,8 @@ class ExampleSidebarX extends StatelessWidget {
   }
 }
 
-class _ScreensExample extends StatelessWidget {
-  const _ScreensExample({
+class MainNavigator extends StatelessWidget {
+  const MainNavigator({
     Key? key,
     required this.controller,
   }) : super(key: key);

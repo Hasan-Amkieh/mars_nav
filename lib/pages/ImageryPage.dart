@@ -1,12 +1,16 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
+
+import '../widgets/GalleryContainer.dart';
 
 class ImageryPage extends StatelessWidget {
 
-  const ImageryPage({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Text("Imagery");
+    return Wrap(
+      children: [
+        GalleryContainer(),
+      ],
+    );
   }
 
 }

@@ -3,7 +3,6 @@ import 'package:gauge_indicator/gauge_indicator.dart';
 import 'package:mars_nav/widgets/AngleGauge.dart';
 import 'package:mars_nav/widgets/GraphContainer.dart';
 import 'package:mars_nav/widgets/NoConnection.dart';
-import 'package:new_flutter_gauge/widgets/flutter_gauge_widget.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../main.dart';
@@ -306,22 +305,38 @@ class SensoryPage extends StatelessWidget {
                     icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                     onPressed: () {},
                   ),
-                  sizeModifier: 1.0,
+                  sizeModifier: 1.5,
                   titleWidget: Text("Speed", style: graphContainerStyle),
                   iconWidget: Image.asset("lib/icons/speed-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
-                  graph: FlutterGauge(
-                    index: Main.speed,
-                    end: 1,
-                    hand: Hand.short,
-                    number: Number.endAndCenterAndStart,
-                    secondsMarker: SecondsMarker.all,
-                    textStyle: TextStyle(
-                      color: Colors.white
-                    ),
-                    counterStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 25,
-                    ),
+                  graph: Column(
+                    children: [
+                      const SizedBox(height: 12,),
+                      Expanded(
+                        child: AnimatedRadialGauge(
+                          duration: const Duration(seconds: 2),
+                          curve: Curves.elasticOut,
+                          value: Main.speed,
+                          axis: GaugeAxis(
+                            min: 0,
+                            max: 1,
+                            degrees: 160,
+                            pointer: const GaugePointer.needle(
+                              width: 16,
+                              height: 120,
+                              borderRadius: 16,
+                              color: Colors.black45,
+                            ),
+                            progressBar: GaugeProgressBar.rounded(
+                              color: (Main.signalStrengthRover + 90) < 20 ? Colors.redAccent : ((Main.signalStrengthRover + 90) < 40 ? Colors.yellowAccent : Colors.green),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+                      Text(
+                          "${Main.speed} m/s",
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))
+                    ],
                   ),
                 )
                 ),
