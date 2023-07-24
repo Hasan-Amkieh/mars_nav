@@ -1,8 +1,10 @@
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:gauge_indicator/gauge_indicator.dart';
 import 'package:mars_nav/widgets/AngleGauge.dart';
 import 'package:mars_nav/widgets/GraphContainer.dart';
-import 'package:mars_nav/widgets/NoConnection.dart';
+import 'package:win32/win32.dart';
+
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../main.dart';
@@ -22,12 +24,27 @@ class StringData {
   StringData(this.x, this.y);
 }
 
-class SensoryPage extends StatelessWidget {
-  SensoryPage({value});
+class SensoryPage extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() {
+
+    return SensoryPageState();
+  }
+
+}
+
+class SensoryPageState extends State<SensoryPage> {
+  SensoryPageState();
 
   static TextStyle graphContainerStyle = const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20);
 
   static Widget separator = const SizedBox(width: 26);
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +111,7 @@ class SensoryPage extends StatelessWidget {
                     borderWidth: 0,
                     series: <SplineAreaSeries>[
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 3000),
                           TimeData(DateTime(2023, 2, 1), 5000),
@@ -108,10 +125,10 @@ class SensoryPage extends StatelessWidget {
                         color: const Color(0xFF00D2FF).withOpacity(0.1),
                         borderColor: const Color(0xFF00D2FF),
                         borderWidth: 3,
-                        name: 'H2  ${Main.MQ_8_value} ppm',
+                        name: 'H₂  ${Main.MQ_8_value} ppm',
                       ),
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 4050),
                           TimeData(DateTime(2023, 2, 1), 6000),
@@ -125,10 +142,10 @@ class SensoryPage extends StatelessWidget {
                         color: const Color(0xFFFF6B00).withOpacity(0.1),
                         borderColor: const Color(0xFFFF6B00),
                         borderWidth: 3,
-                        name: 'NH3, NO2, C6H6  ${Main.MQ_135_value} ppm',
+                        name: 'NH₃, NO₂, C₆H₆  ${Main.MQ_135_value} ppm',
                       ),
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 5050),
                           TimeData(DateTime(2023, 2, 1), 7000),
@@ -142,10 +159,10 @@ class SensoryPage extends StatelessWidget {
                         color: const Color(0xFF00FFD4).withOpacity(0.1),
                         borderColor: const Color(0xFF00FFD4),
                         borderWidth: 3,
-                        name: 'CH4, C4H10, C3H8  ${Main.MQ_2_value} ppm',
+                        name: 'CH₄, C₄H₁₀, C₃H₈  ${Main.MQ_2_value} ppm',
                       ),
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 3050),
                           TimeData(DateTime(2023, 2, 1), 5050),
@@ -162,7 +179,7 @@ class SensoryPage extends StatelessWidget {
                         name: 'CO  ${Main.MQ_7_value} ppm',
                       ),
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 1050),
                           TimeData(DateTime(2023, 2, 1), 2050),
@@ -176,7 +193,7 @@ class SensoryPage extends StatelessWidget {
                         color: const Color(0xFFB19CD9).withOpacity(0.1),
                         borderColor: const Color(0xFFB19CD9),
                         borderWidth: 3,
-                        name: 'CO2  ${Main.MQ_7_value} ppm',
+                        name: 'CO₂  ${Main.CO2_value} ppm',
                       ),
                     ],
                   ),
@@ -203,7 +220,7 @@ class SensoryPage extends StatelessWidget {
                             children: [
                               Image.asset("lib/icons/water-blue.png", height: Main.iconSize * 1 , width: Main.iconSize * 1),
                               const SizedBox(width: 10,),
-                              Text("Humiditiy ${Main.humidity}%", style: TextStyle(color: Colors.white)),
+                              Text("Humiditiy ${Main.humidity}%", style: const TextStyle(color: Colors.white)),
                             ],
                           ),
                           const SizedBox(height: 10),
@@ -211,7 +228,7 @@ class SensoryPage extends StatelessWidget {
                             children: [
                               Image.asset("lib/icons/temperature-red.png", height: Main.iconSize * 1, width: Main.iconSize * 1),
                               const SizedBox(width: 10,),
-                              Text("Temperature ${Main.temperature} C", style: TextStyle(color: Colors.white)),
+                              Text("Temperature ${Main.temperature} C", style: const TextStyle(color: Colors.white)),
                             ],
                           ),
                           const SizedBox(height: 10),
@@ -219,7 +236,7 @@ class SensoryPage extends StatelessWidget {
                             children: [
                               Image.asset("lib/icons/air-pressure-green.png", height: Main.iconSize * 1, width: Main.iconSize * 1),
                               const SizedBox(width: 10,),
-                              Text("Air Pressure ${Main.airPressure} millibar", style: TextStyle(color: Colors.white)),
+                              Text("Air Pressure ${Main.airPressure} millibar", style: const TextStyle(color: Colors.white)),
                             ],
                           ),
                         ],
@@ -433,7 +450,7 @@ class SensoryPage extends StatelessWidget {
                     borderWidth: 0,
                     series: <SplineAreaSeries>[
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 405),
                           TimeData(DateTime(2023, 2, 1), 600),
@@ -450,7 +467,7 @@ class SensoryPage extends StatelessWidget {
                         name: 'PM1.0  ${Main.PM1_0_concentration} µg/m³',
                       ),
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 550),
                           TimeData(DateTime(2023, 2, 1), 700),
@@ -467,7 +484,7 @@ class SensoryPage extends StatelessWidget {
                         name: 'PM2.5 ${Main.PM2_5_concentration} µg/m³',
                       ),
                       SplineAreaSeries<TimeData, DateTime>(
-                        markerSettings: MarkerSettings(isVisible: true),
+                        markerSettings: const MarkerSettings(isVisible: true),
                         dataSource: <TimeData>[
                           TimeData(DateTime(2023, 1, 1), 350),
                           TimeData(DateTime(2023, 2, 1), 550),
@@ -497,12 +514,17 @@ class SensoryPage extends StatelessWidget {
                   child: GraphContainer(
                     detailsWidget: IconButton(
                       icon: Image.asset("lib/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
-                      onPressed: () {},
+                      onPressed: () async {
+                        int x = ShellExecute(0, 'open'.toNativeUtf16(),
+                            'mars_nav.exe'.toNativeUtf16(), r'video_player C:\Users\HasanAmk\Downloads\x\1.mp4'.toNativeUtf16(),
+                            'C:\\Users\\HasanAmk\\Documents\\Projects\\Flutter_Projects\\mars_nav\\build\\windows\\runner\\Debug\\'.toNativeUtf16(), SW_SHOW);
+                        print("exit code: $x");
+                      },
                     ),
                     iconWidget: Image.asset("lib/icons/circuitry-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
                     titleWidget: Text("Computing Resources", style: graphContainerStyle),
                     sizeModifier: 1.2,
-                    graph: Main.roverStatus == RoverState.offline ? NoConnectionWidget(msg: "Halo!") : GestureDetector(
+                    graph: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       child: SfCartesianChart(
                         trackballBehavior: TrackballBehavior(
@@ -532,7 +554,7 @@ class SensoryPage extends StatelessWidget {
                                 color: Colors.black,
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              padding: EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(6),
                               child: Text(
                                 '$name $number_str',
                                 style: const TextStyle(color: Colors.white),
@@ -558,7 +580,7 @@ class SensoryPage extends StatelessWidget {
                           isVisible: false,
                         ),
                         plotAreaBorderWidth: 0,
-                        legend: Legend(
+                        legend: const Legend(
                           isVisible: true,
                           position: LegendPosition.bottom,
                           textStyle: TextStyle(color: Colors.white, fontSize: 16),
@@ -782,7 +804,7 @@ class SensoryPage extends StatelessWidget {
                                 min: 0,
                                 max: 60,
                                 degrees: 180,
-                              pointer: GaugePointer.needle(
+                              pointer: const GaugePointer.needle(
                                 width: 16,
                                 height: 80,
                                 borderRadius: 16,
@@ -883,7 +905,7 @@ class SensoryPage extends StatelessWidget {
                       borderWidth: 0,
                       series: <SplineSeries>[
                         SplineSeries<TimeData, DateTime>(
-                          markerSettings: MarkerSettings(isVisible: true),
+                          markerSettings: const MarkerSettings(isVisible: true),
                           dataSource: <TimeData>[
                             TimeData(DateTime(2023, 1, 1), 405),
                             TimeData(DateTime(2023, 2, 1), 600),
@@ -900,7 +922,7 @@ class SensoryPage extends StatelessWidget {
                           name: 'Visible Light Intensity  ${Main.visibleLightIntensity} lux',
                         ),
                         SplineSeries<TimeData, DateTime>(
-                          markerSettings: MarkerSettings(isVisible: true),
+                          markerSettings: const MarkerSettings(isVisible: true),
                           dataSource: <TimeData>[
                             TimeData(DateTime(2023, 1, 1), 550),
                             TimeData(DateTime(2023, 2, 1), 700),

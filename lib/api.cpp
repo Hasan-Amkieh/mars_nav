@@ -211,6 +211,7 @@ std::vector<SimpleSerial*> serials;
 
 EXPORT
 void delArray(struct Array * arr) {
+    delete arr->array;
 	delete arr;
 }
 
@@ -247,7 +248,8 @@ void closeSerialPort(int handleID) {
 }
 
 EXPORT
-void maximizeWindow(const char* windowName) {
+void maximizeWindow() {
+    char windowName[] = "mars_nav";
     wchar_t wtext[20];
     mbstowcs(wtext, windowName, strlen(windowName)+1);//Plus null
     LPWSTR ptr = wtext;

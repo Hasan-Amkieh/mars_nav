@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_meedu_videoplayer/init_meedu_player.dart';
 import 'package:mars_nav/pages/CommandsPage.dart';
@@ -7,13 +9,15 @@ import 'package:mars_nav/pages/SensoryPage.dart';
 import 'package:mars_nav/pages/SettignsPage.dart';
 import 'package:mars_nav/pages/ShellPage.dart';
 import 'package:mars_nav/widgets/BatteryIcon.dart';
+import 'package:mars_nav/widgets/VideoPlayer.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:shimmer/shimmer.dart';
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'dart:convert';
 
 import 'dart:math' as math;
+
 
 enum RoverState {
   offline("OFFLINE", Colors.blueGrey), standard("STANDARD MODE", Colors.green), autonomous("AUTONOMOUS MODE", Colors.yellow), halt("HALTED", Colors.red);
@@ -25,6 +29,25 @@ enum RoverState {
 
 class Main { // This class holds all the general variables to the interface as a whole
 
+  // Theme Colors:
+  static const primaryColor = Color(0xFF685BFF);
+  static const canvasColor = Color(0xFF2E2E48);
+  static const scaffoldBackgroundColor = Color(0xFF464667);
+  static const accentCanvasColor = Color(0xFF3E3E61);
+  static const white = Colors.white;
+  static final actionColor = const Color(0xFF5F5FA7).withOpacity(0.6);
+
+  // Interface related:
+  static bool appInitialized = false;
+  static bool isMainWindow = true;
+  static Widget? widgetToDisplay;
+  static late List<String> options;
+  static late String appDir;
+
+  static const List<String> imageExtensions = ['jpg', '.peg', 'png', 'gif', 'bmp', 'avif', 'webp', 'jpeg'];
+  static const List<String> videoExtensions = ['mp4', 'avi', 'mkv', 'mov', 'wmv'];
+
+  // Rover related:
   static RoverState roverStatus = RoverState.standard; // holds the state of the rover
   static const double iconSize = 20.0;
   static const pageIndexToName = ["Sensory", "Imagery", "History", "Commands", "Command Shell", "Settings"];
@@ -39,30 +62,24 @@ class Main { // This class holds all the general variables to the interface as a
   static String roverBatteryRemainingTime = "1h 3m";
 
   // atmosphere in Drone (used for both drone and rover):
-  static bool BME280Online = true;
   static double humidity = 10;
   static double temperature = 90;
   static double airPressure = 50;
 
   // IMU sensor in Rover: 0 - 180 degrees
-  static bool IMUOnline = false; // TODO: Test it:
   static double xAngle = 155;
   static double yAngle = 20;
   static double zAngle = 69;
   static double speed = 0.4; // in m/s
 
   // gas sensors: 100 ppm - 10000 ppm
-  static bool MQ_2_online = true;
-  static bool MQ_7_online = true;
-  static bool MQ_8_online = true;
-  static bool MQ_135_online = true;
+  static double CO2_value = 1500;
   static double MQ_8_value = 1000;
   static double MQ_135_value = 700;
   static double MQ_2_value = 2000;
   static double MQ_7_value = 9600;
 
   // particles sensor:
-  static bool PMS5003Online = true;
   static double PM1_0_concentration = 100;
   static double PM2_5_concentration = 10;
   static double PM10_0_concentration = 50;
@@ -100,36 +117,63 @@ final class CArray extends Struct {
   external int len;
 }
 
-void main() {
+void main(List<String> args) async {
+
+  // print("The args I received are: $args");
+  Main.options = [];
+  if (args.isNotEmpty) {
+    Main.options = args; // The first two are ['multi_window', 1, json]
+    switch(Main.options[0]) {
+      case "video_player":
+        Main.widgetToDisplay = VideoPlayer(filePath: Main.options[1]);
+        break;
+    }
+  }
 
   Main.nativeApiLib = DynamicLibrary.open('api.dll');
   Main.initSerialPort = Main.nativeApiLib.lookup<NativeFunction<Int Function(Pointer<Int8>)>>('initSerial').asFunction<int Function(Pointer<Int8>)>();
   Main.readSerialPort = Main.nativeApiLib.lookup<NativeFunction<Pointer<CArray> Function(Int, Int, Int)>>('readSerialPort').asFunction<Pointer<CArray> Function(int, int, int)>();
   Main.delArray = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<CArray>)>>('delArray').asFunction<void Function(Pointer<CArray>)>();
   Main.closeSerialPort = Main.nativeApiLib.lookup<NativeFunction<Void Function(Int)>>('closeSerialPort').asFunction<void Function(int)>();
-  Main.maximizeWindow = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<Utf8>)>>('maximizeWindow').asFunction<void Function(Pointer<Utf8>)>();
+  Main.maximizeWindow = Main.nativeApiLib.lookup<NativeFunction<Void Function()>>('maximizeWindow').asFunction<void Function()>();
 
-  const portName = "COM6";
-  final Pointer<Int8> nativeString = calloc<Int8>(portName.length + 1);
-  final nativeStringArray = nativeString.asTypedList(portName.length + 1);
-  for (var i = 0; i < portName.length; i++) {
-    nativeStringArray[i] = portName.codeUnitAt(i);
-  }
-  nativeStringArray[portName.length] = 0;
+  Main.appDir = (await getApplicationDocumentsDirectory()).path;
+  Directory directory = Directory(Main.appDir + r"\mars_nav");
 
-  int result = Main.initSerialPort(nativeString);
-  if (result == 0) {
-    Pointer<CArray> x;
-    while (true) {
-      x = Main.readSerialPort(0, 2, 0);
-      print(x.ref.arr.toDartString());
-      print(x.ref.len);
-    }
+  if (!directory.existsSync()) {
+    directory.createSync();
+    Directory(Main.appDir + r"\mars_nav\imagery").createSync();
   } else {
-    print("ERROR opening COM3!");
+    directory = Directory(Main.appDir + r"\mars_nav\imagery");
+    if (!directory.existsSync()) {
+      directory.createSync();
+    }
   }
+
+  // const portName = "COM6";
+  // final Pointer<Int8> nativeString = calloc<Int8>(portName.length + 1);
+  // final nativeStringArray = nativeString.asTypedList(portName.length + 1);
+  // for (var i = 0; i < portName.length; i++) {
+  //   nativeStringArray[i] = portName.codeUnitAt(i);
+  // }
+  // nativeStringArray[portName.length] = 0;
+  //
+  // int result = Main.initSerialPort(nativeString);
+  // if (result == 0) {
+  //   Pointer<CArray> x;
+  //   while (true) {
+  //     x = Main.readSerialPort(0, 2, 0);
+  //     print(x.ref.arr.toDartString());
+  //     print(x.ref.len);
+  //     Main.delArray(x); // Deallocate the C object, in C++ we need to clean our own memory
+  //   }
+  // } else {
+  //   print("ERROR opening COM3!");
+  // }
 
   initMeeduPlayer();
+
+
   runApp(Home());
 }
 
@@ -141,20 +185,27 @@ class Home extends StatelessWidget {
 
   @override
   StatelessElement createElement() {
-    ;
 
     return StatelessElement(this);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (Main.isMainWindow && !Main.appInitialized) {
+      Future.delayed(const Duration(seconds: 2), () {
+        Main.appInitialized = true;
+        print('App initialized after first frame!');
+        Main.maximizeWindow();
+      });
+    }
+
     return MaterialApp(
       title: 'Mars Nav',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: primaryColor,
-        canvasColor: canvasColor,
-        scaffoldBackgroundColor: scaffoldBackgroundColor,
+        primaryColor: Main.primaryColor,
+        canvasColor: Main.canvasColor,
+        scaffoldBackgroundColor: Main.scaffoldBackgroundColor,
         textTheme: const TextTheme(
           headlineSmall: TextStyle(
             color: Colors.white,
@@ -166,28 +217,37 @@ class Home extends StatelessWidget {
       home: Builder(
         builder: (context) {
           final isSmallScreen = MediaQuery.of(context).size.width < 600;
-          return Scaffold(
-            key: _key,
-            appBar: isSmallScreen
-                ? AppBar(
-              backgroundColor: canvasColor,
-                  title: Text(Main.pageIndexToName[_controller.selectedIndex]),
-            )
-                : null,
-            drawer: CustomSidebarX(controller: _controller),
-            body: Row(
-              children: [
-                if (!isSmallScreen) CustomSidebarX(controller: _controller),
-                Expanded(
-                  child: Center(
-                    child: MainNavigator(
-                      controller: _controller,
+          if (Main.widgetToDisplay != null) {
+            return Scaffold(
+              key: _key,
+              body: Center(
+                child: Main.widgetToDisplay,
+              ),
+            );
+          } else {
+            return Scaffold(
+              key: _key,
+              appBar: isSmallScreen
+                  ? AppBar(
+                backgroundColor: Main.canvasColor,
+                title: Text(Main.pageIndexToName[_controller.selectedIndex]),
+              )
+                  : null,
+              drawer: CustomSidebarX(controller: _controller),
+              body: Row(
+                children: [
+                  if (!isSmallScreen) CustomSidebarX(controller: _controller),
+                  Expanded(
+                    child: Center(
+                      child: MainNavigator(
+                        controller: _controller,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
+                ],
+              ),
+            );
+          }
         },
       ),
     );
@@ -281,25 +341,25 @@ class CustomSidebarX extends StatelessWidget {
         theme: SidebarXTheme(
           margin: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: canvasColor,
+            color: Main.canvasColor,
             borderRadius: BorderRadius.circular(20),
           ),
-          hoverColor: scaffoldBackgroundColor,
+          hoverColor: Main.scaffoldBackgroundColor,
           textStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
           selectedTextStyle: const TextStyle(color: Colors.white),
           itemTextPadding: const EdgeInsets.only(left: 30),
           selectedItemTextPadding: const EdgeInsets.only(left: 30),
           itemDecoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: canvasColor),
+            border: Border.all(color: Main.canvasColor),
           ),
           selectedItemDecoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: actionColor.withOpacity(0.37),
+              color: Main.actionColor.withOpacity(0.37),
             ),
             gradient: const LinearGradient(
-              colors: [accentCanvasColor, canvasColor],
+              colors: [Main.accentCanvasColor, Main.canvasColor],
             ),
             boxShadow: [
               BoxShadow(
@@ -320,10 +380,10 @@ class CustomSidebarX extends StatelessWidget {
         extendedTheme: const SidebarXTheme(
           width: 200,
           decoration: BoxDecoration(
-            color: canvasColor,
+            color: Main.canvasColor,
           ),
         ),
-        footerDivider: divider,
+        footerDivider: Divider(color: Colors.white.withOpacity(0.3), height: 1),
         footerBuilder: (context, extended) {
           return Container(
             margin: const EdgeInsets.fromLTRB(0, 12, 0, 12),
@@ -407,7 +467,7 @@ class MainNavigator extends StatelessWidget {
         if (Main.roverStatus == RoverState.autonomous) {
           switch (controller.selectedIndex) {
             case 0:
-              return SensoryPage(value: 10);
+              return SensoryPage();
             case 1:
               return HistoryPage();
             case 2:
@@ -425,7 +485,7 @@ class MainNavigator extends StatelessWidget {
         } else {
           switch (controller.selectedIndex) {
             case 0:
-              return SensoryPage(value: 10,);
+              return SensoryPage();
             case 1:
               return ImageryPage();
             case 2:
@@ -447,11 +507,3 @@ class MainNavigator extends StatelessWidget {
     );
   }
 }
-
-const primaryColor = Color(0xFF685BFF);
-const canvasColor = Color(0xFF2E2E48);
-const scaffoldBackgroundColor = Color(0xFF464667);
-const accentCanvasColor = Color(0xFF3E3E61);
-const white = Colors.white;
-final actionColor = const Color(0xFF5F5FA7).withOpacity(0.6);
-final divider = Divider(color: white.withOpacity(0.3), height: 1);

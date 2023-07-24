@@ -45,7 +45,6 @@ class VideoPlayerState extends State<VideoPlayer> {
         DataSource(
           type: DataSourceType.file,
           file: File(widget.filePath),
-
         ),
         autoplay: true,
         looping: false);

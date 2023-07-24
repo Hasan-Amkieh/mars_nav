@@ -117,18 +117,10 @@ packages:
     dependency: "direct main"
     description:
       name: cupertino_icons
-      sha256: e35129dc44c9118cee2a5603506d823bab99c68393879edb440e0090d07586be
+      sha256: caac504f942f41dfadcf45229ce8c47065b93919a12739f20d6173a883c5ec73
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.5"
-  desktop_multi_window:
-    dependency: "direct main"
-    description:
-      name: desktop_multi_window
-      sha256: "29971186ae0790e32b156f127f9c22c5ee77bdb94b14f7cea23f2356d0c76cfc"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
+    version: "1.0.2"
   equatable:
     dependency: transitive
     description:
@@ -252,10 +244,10 @@ packages:
     dependency: transitive
     description:
       name: http
-      sha256: "759d1a329847dd0f39226c688d3e06a6b8679668e350e2891a6474f8b4bb8525"
+      sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "0.13.6"
   http_parser:
     dependency: transitive
     description:
@@ -409,7 +401,7 @@ packages:
     source: hosted
     version: "1.8.3"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       sha256: "3087813781ab814e4157b172f1a11c46be20179fcc9bea043e0fba36bc0acaa2"
@@ -717,6 +709,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.1"
+  thumblr:
+    dependency: "direct main"
+    description:
+      name: thumblr
+      sha256: bfdb4c3d6e95d9595d4d464b255b85845db5f7ab88d8648d3edfe4f19adf043b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
+  thumblr_macos:
+    dependency: transitive
+    description:
+      name: thumblr_macos
+      sha256: "3b5189db149ee4c6c2fabc6f4bf3d84ed09c96cc45a2153a53ae781742c404c6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0"
+  thumblr_platform_interface:
+    dependency: transitive
+    description:
+      name: thumblr_platform_interface
+      sha256: abfcd54b5567b3c8d9a5426b43ed4783c613c34194564c47ffba0ea51f328962
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1+1"
+  thumblr_windows:
+    dependency: transitive
+    description:
+      name: thumblr_windows
+      sha256: a1d372ccb4d4981e6d55ff516ee5b102f65d0f905d5d36c9712a095358d9e91a
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3+1"
   typed_data:
     dependency: transitive
     description:
