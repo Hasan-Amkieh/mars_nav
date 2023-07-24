@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../main.dart';
+
 class SearchBarWidget extends StatefulWidget {
 
   @override
@@ -8,28 +10,28 @@ class SearchBarWidget extends StatefulWidget {
 }
 
 class SearchBarWidgetState extends State<SearchBarWidget> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      cursorColor: Colors.white,
       controller: _controller,
-      style: TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: 'File Name',
-        hintStyle: TextStyle(color: Colors.grey),
-        prefixIcon: Icon(Icons.search, color: Colors.white),
+        hintStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: const Icon(Icons.search, color: Colors.white),
         suffixIcon: _controller.text.isNotEmpty
             ? IconButton(
-          icon: Icon(Icons.clear, color: Colors.white),
+          icon: const Icon(Icons.clear, color: Colors.white),
           onPressed: () {
             _controller.clear();
           },
-        )
-            : null,
+        ) : null,
         filled: true,
-        fillColor: Colors.grey[800],
-        contentPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        fillColor: Main.canvasColor,
+        contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),
           borderSide: BorderSide.none,

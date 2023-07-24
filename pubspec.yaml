@@ -46,6 +46,7 @@ dependencies:
   ffi: 2.0.2
   path_provider: 2.0.15
   thumblr: ^0.0.4
+  photo_view: ^0.14.0
 
 msix_config:
   display_name: mars_nav

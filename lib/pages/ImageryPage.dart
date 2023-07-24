@@ -14,7 +14,10 @@ enum GalleryType {
 }
 
 enum GallerySource {
-  drone, rover, other
+  drone("DRONE"), rover("ROVER"), other("OTHERS");
+  const GallerySource(this.name);
+
+  final String name;
 }
 
 class GalleryEntity { // The file name should have the format DATETIME_{D/R}_NAME.FILETYPE
@@ -23,9 +26,9 @@ class GalleryEntity { // The file name should have the format DATETIME_{D/R}_NAM
   GalleryType type;
   GallerySource source;
   DateTime time;
-  Widget viewImage;
+  String fullFileName;
 
-  GalleryEntity({required this.fileName, required this.type, required this.source, required this.time, required this.viewImage});
+  GalleryEntity({required this.fileName, required this.type, required this.source, required this.time, required this.fullFileName});
 
 }
 
@@ -43,7 +46,6 @@ class ImageryPageState extends State {
   static GalleryType classifyFile(String fileName) {
 
     String extension = fileName.toLowerCase().split('.').last;
-    print("Type extension is $extension");
 
     if (Main.imageExtensions.contains(extension)) {
       return GalleryType.image;
@@ -68,12 +70,10 @@ class ImageryPageState extends State {
 
   }
 
-  static List<GalleryEntity> galleryElements = [];
-  static List<Widget> galleryWidgets = [];
+  static List<GalleryContainer> galleryWidgets = [];
 
   Future<void> fetchGalleryWidgets() async {
 
-    galleryElements = [];
     galleryWidgets = [];
 
     Directory dir = Directory(Main.appDir + r'\mars_nav\imagery');
@@ -86,12 +86,8 @@ class ImageryPageState extends State {
         GallerySource gallerySource = classifySource(fileNameSegments[1]);
         DateTime time = DateTime.parse(fileNameSegments[0].replaceAll(".", ":"));
 
-        Widget? viewImage;
         Thumbnail? _thumb;
-        if (galleryType == GalleryType.image) {
-          print("Loading: ${file.path}");
-          viewImage = Image.file(file, width: 200, height: 200);
-        } else if (galleryType == GalleryType.video) {
+        if (galleryType == GalleryType.video) {
           try {
             _thumb = await generateThumbnail(filePath: file.path, position: 0.0);
           } on PlatformException catch (e) {
@@ -99,17 +95,19 @@ class ImageryPageState extends State {
           } catch (e) {
             debugPrint('Failed to generate thumbnail: ${e.toString()}');
           }
-        } else {
-          viewImage = const Row(children: [Icon(Icons.cancel_outlined, color: Colors.red,), SizedBox(width: 8,) ,Text("Can't be displayed")],);
         }
-        GalleryEntity entity = GalleryEntity(fileName: fileName, source: gallerySource, time: time, type: galleryType, viewImage: viewImage ?? Text("Error"));
+        GalleryEntity entity = GalleryEntity(fileName: fileName, source: gallerySource, time: time, type: galleryType, fullFileName: file.path, );
 
-        galleryElements.add(entity);
         galleryWidgets.add(GalleryContainer(entity: entity, thumb: _thumb));
       }
     }
 
   }
+
+  bool isRoverOn = false;
+  bool isDroneOn = false;
+  bool isImageOn = false;
+  bool isCameraOn = false;
 
   @override
   Widget build(BuildContext context) {
@@ -151,13 +149,110 @@ class ImageryPageState extends State {
                       child: Column(
                         children: [
                           const SizedBox(height: 16),
-                          SearchBarWidget(),
+                          Row(
+                            children: [
+                              SizedBox(width: MediaQuery.of(context).size.width * 0.7, child: SearchBarWidget()),
+                              const SizedBox(width: 16),
+                              Column(
+                                children: [
+                                  TextButton(
+                                    child: Image.asset("lib/icons/drone-${isDroneOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    onPressed: () {
+                                      setState(() {
+                                        isDroneOn = !isDroneOn;
+                                        if (isRoverOn) {
+                                          isRoverOn = false;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Image.asset("lib/icons/rover-${isRoverOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    onPressed: () {
+                                      setState(() {
+                                        isRoverOn = !isRoverOn;
+                                        if (isDroneOn) {
+                                          isDroneOn = false;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                children: [
+                                  TextButton(
+                                    child: Image.asset("lib/icons/imagery-${isImageOn ? "white" : "black"}.png", width: Main.iconSize * 1.2, height: Main.iconSize * 1.2),
+                                    onPressed: () {
+                                      setState(() {
+                                        isImageOn = !isImageOn;
+                                        if (isCameraOn) {
+                                          isCameraOn = false;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Image.asset("lib/icons/camera-${isCameraOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    onPressed: () {
+                                      setState(() {
+                                        isCameraOn = !isCameraOn;
+                                        if (isImageOn) {
+                                          isImageOn = false;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 16),
+                            ],
+                          ),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 24,
                             runSpacing: 24,
                             children: [
-                              ...galleryWidgets
+                              ...galleryWidgets.where((element) {
+                                if (!isImageOn && !isCameraOn) {
+                                  if (isDroneOn) {
+                                    return element.entity.source == GallerySource.drone;
+                                  }
+                                  if (isRoverOn) {
+                                    return element.entity.source == GallerySource.rover;
+                                  }
+                                }
+
+                                if (isImageOn) {
+                                  if (element.entity.type == GalleryType.image) {
+                                    if (isDroneOn) {
+                                      return element.entity.source == GallerySource.drone;
+                                    }
+                                    if (isRoverOn) {
+                                      return element.entity.source == GallerySource.rover;
+                                    }
+                                  } else {
+                                    return false;
+                                  }
+                                }
+
+                                if (isCameraOn) {
+                                  if (element.entity.type == GalleryType.video) {
+                                    if (isDroneOn) {
+                                      return element.entity.source == GallerySource.drone;
+                                    }
+                                    if (isRoverOn) {
+                                      return element.entity.source == GallerySource.rover;
+                                    }
+                                  }
+                                  else {
+                                    return false;
+                                  }
+                                }
+
+                                return true;
+                              }).toList(),
                             ],
                           )
                         ],
