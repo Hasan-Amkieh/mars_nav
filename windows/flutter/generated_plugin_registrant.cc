@@ -7,6 +7,7 @@
 #include "generated_plugin_registrant.h"
 
 #include <flutter_meedu_videoplayer/flutter_meedu_videoplayer_plugin_c_api.h>
+#include <flutter_window_close/flutter_window_close_plugin.h>
 #include <fullscreen_window/fullscreen_window_plugin_c_api.h>
 #include <media_kit_libs_windows_video/media_kit_libs_windows_video_plugin_c_api.h>
 #include <media_kit_video/media_kit_video_plugin_c_api.h>
@@ -18,6 +19,8 @@
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   FlutterMeeduVideoplayerPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FlutterMeeduVideoplayerPluginCApi"));
+  FlutterWindowClosePluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FlutterWindowClosePlugin"));
   FullscreenWindowPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FullscreenWindowPluginCApi"));
   MediaKitLibsWindowsVideoPluginCApiRegisterWithRegistrar(

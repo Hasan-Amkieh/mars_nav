@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mars_nav/widgets/VideoPlayer.dart';
 import 'package:thumblr/thumblr.dart';
 import 'package:photo_view/photo_view.dart';
@@ -44,7 +43,7 @@ class GalleryContainer extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.fromLTRB(12, 8, 0, 0),
+            padding: const EdgeInsets.fromLTRB(12, 8, 0, 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -84,9 +83,9 @@ class GalleryContainer extends StatelessWidget {
                           builder: (BuildContext context) {
                             return AlertDialog(
                               backgroundColor: Main.scaffoldBackgroundColor,
-                              title: Text("Rename", style: TextStyle(color: Colors.white)),
+                              title: const Text("Rename", style: TextStyle(color: Colors.white)),
                               content: TextField(
-                                style: TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white),
                                 onChanged: (value) {
                                   toRename = value;
                                 },

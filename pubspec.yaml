@@ -45,8 +45,10 @@ dependencies:
   flutter_meedu_videoplayer: 4.2.15
   ffi: 2.0.2
   path_provider: 2.0.15
-  thumblr: ^0.0.4
-  photo_view: ^0.14.0
+  thumblr: 0.0.4
+  photo_view: 0.14.0
+  table_calendar: 3.0.9
+  flutter_window_close: ^0.2.2
 
 msix_config:
   display_name: mars_nav
@@ -81,7 +83,10 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - lib/icons/
+    - lib/assets/
+    - lib/assets/icons/
+    - lib/assets/influxdb/
+    - lib/assets/influxdb/all_data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

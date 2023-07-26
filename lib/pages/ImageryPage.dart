@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mars_nav/main.dart';
-import 'package:mars_nav/widgets/VideoPlayer.dart';
 import 'package:thumblr/thumblr.dart';
 
 import '../widgets/GalleryContainer.dart';
@@ -86,10 +85,10 @@ class ImageryPageState extends State {
         GallerySource gallerySource = classifySource(fileNameSegments[1]);
         DateTime time = DateTime.parse(fileNameSegments[0].replaceAll(".", ":"));
 
-        Thumbnail? _thumb;
+        Thumbnail? thumb;
         if (galleryType == GalleryType.video) {
           try {
-            _thumb = await generateThumbnail(filePath: file.path, position: 0.0);
+            thumb = await generateThumbnail(filePath: file.path, position: 0.0);
           } on PlatformException catch (e) {
             debugPrint('Failed to generate thumbnail: ${e.message}');
           } catch (e) {
@@ -98,7 +97,7 @@ class ImageryPageState extends State {
         }
         GalleryEntity entity = GalleryEntity(fileName: fileName, source: gallerySource, time: time, type: galleryType, fullFileName: file.path, );
 
-        galleryWidgets.add(GalleryContainer(entity: entity, thumb: _thumb));
+        galleryWidgets.add(GalleryContainer(entity: entity, thumb: thumb));
       }
     }
 
@@ -108,6 +107,8 @@ class ImageryPageState extends State {
   bool isDroneOn = false;
   bool isImageOn = false;
   bool isCameraOn = false;
+
+  String searchText = "";
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +125,7 @@ class ImageryPageState extends State {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset("lib/icons/gallery-white.png", width: Main.iconSize, height: Main.iconSize),
+                        Image.asset("lib/assets/icons/gallery-white.png", width: Main.iconSize, height: Main.iconSize),
                         const SizedBox(width: 10),
                         const Text("Gallery", style: TextStyle(color: Colors.white)),
                       ],
@@ -134,9 +135,9 @@ class ImageryPageState extends State {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset("lib/icons/camera-white.png", width: Main.iconSize, height: Main.iconSize),
+                        Image.asset("lib/assets/icons/camera-white.png", width: Main.iconSize, height: Main.iconSize),
                         const SizedBox(width: 10),
-                        const Text("Visual Recording", style: TextStyle(color: Colors.white)),
+                        const Text("Streaming & Recording", style: TextStyle(color: Colors.white)),
                       ],
                     ),
                   ),
@@ -151,12 +152,16 @@ class ImageryPageState extends State {
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              SizedBox(width: MediaQuery.of(context).size.width * 0.7, child: SearchBarWidget()),
+                              SizedBox(width: MediaQuery.of(context).size.width * 0.7, child: SearchBarWidget(onChanged: (String newText) {
+                                setState(() {
+                                  searchText = newText;
+                                });
+                              })),
                               const SizedBox(width: 16),
                               Column(
                                 children: [
                                   TextButton(
-                                    child: Image.asset("lib/icons/drone-${isDroneOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    child: Image.asset("lib/assets/icons/drone-${isDroneOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                                     onPressed: () {
                                       setState(() {
                                         isDroneOn = !isDroneOn;
@@ -167,7 +172,7 @@ class ImageryPageState extends State {
                                     },
                                   ),
                                   TextButton(
-                                    child: Image.asset("lib/icons/rover-${isRoverOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    child: Image.asset("lib/assets/icons/rover-${isRoverOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                                     onPressed: () {
                                       setState(() {
                                         isRoverOn = !isRoverOn;
@@ -183,7 +188,7 @@ class ImageryPageState extends State {
                               Column(
                                 children: [
                                   TextButton(
-                                    child: Image.asset("lib/icons/imagery-${isImageOn ? "white" : "black"}.png", width: Main.iconSize * 1.2, height: Main.iconSize * 1.2),
+                                    child: Image.asset("lib/assets/icons/imagery-${isImageOn ? "white" : "black"}.png", width: Main.iconSize * 1.2, height: Main.iconSize * 1.2),
                                     onPressed: () {
                                       setState(() {
                                         isImageOn = !isImageOn;
@@ -194,7 +199,7 @@ class ImageryPageState extends State {
                                     },
                                   ),
                                   TextButton(
-                                    child: Image.asset("lib/icons/camera-${isCameraOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    child: Image.asset("lib/assets/icons/camera-${isCameraOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                                     onPressed: () {
                                       setState(() {
                                         isCameraOn = !isCameraOn;

@@ -1,19 +1,24 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_meedu_videoplayer/init_meedu_player.dart';
+import 'package:flutter_window_close/flutter_window_close.dart';
 import 'package:mars_nav/pages/CommandsPage.dart';
 import 'package:mars_nav/pages/HistoryPage.dart';
 import 'package:mars_nav/pages/ImageryPage.dart';
+import 'package:mars_nav/pages/SamplesPage.dart';
 import 'package:mars_nav/pages/SensoryPage.dart';
 import 'package:mars_nav/pages/SettignsPage.dart';
 import 'package:mars_nav/pages/ShellPage.dart';
+import 'package:mars_nav/services/InfluxDBHandle.dart';
 import 'package:mars_nav/widgets/BatteryIcon.dart';
 import 'package:mars_nav/widgets/VideoPlayer.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:shimmer/shimmer.dart';
-import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 
 import 'dart:math' as math;
@@ -43,6 +48,8 @@ class Main { // This class holds all the general variables to the interface as a
   static Widget? widgetToDisplay;
   static late List<String> options;
   static late String appDir;
+  static late Process dbProcess;
+  static bool windowCloseInit = false;
 
   static const List<String> imageExtensions = ['jpg', '.peg', 'png', 'gif', 'bmp', 'avif', 'webp', 'jpeg'];
   static const List<String> videoExtensions = ['mp4', 'avi', 'mkv', 'mov', 'wmv'];
@@ -50,7 +57,7 @@ class Main { // This class holds all the general variables to the interface as a
   // Rover related:
   static RoverState roverStatus = RoverState.standard; // holds the state of the rover
   static const double iconSize = 20.0;
-  static const pageIndexToName = ["Sensory", "Imagery", "History", "Commands", "Command Shell", "Settings"];
+  static const pageIndexToName = ["Sensory", "Imagery", "Samples", "History", "Commands", "Command Shell", "Settings"];
 
   // Battery in Rover:
   static double batteryLevel = 95;
@@ -119,36 +126,52 @@ final class CArray extends Struct {
 
 void main(List<String> args) async {
 
+  Main.appDir = (await getApplicationDocumentsDirectory()).path;
+
   // print("The args I received are: $args");
   Main.options = [];
   if (args.isNotEmpty) {
     Main.options = args; // The first two are ['multi_window', 1, json]
+    Main.isMainWindow = false;
     switch(Main.options[0]) {
       case "video_player":
         Main.widgetToDisplay = VideoPlayer(filePath: Main.options[1]);
         break;
     }
+  } else { // otherwise it is a main window:
+    // TODO: check for release mode in msix
+    Main.dbProcess = await Process.start("lib/assets/influxdb/influxd.exe", ["--bolt-path=./lib/assets/influxdb/all_data/all_data.bolt"]);
+    Main.dbProcess.stderr.transform(utf8.decoder).listen((data) {
+      print('stderr: $data');
+    });
+    Main.dbProcess.stdout.transform(utf8.decoder).listen((data) {
+      print('stdout: $data');
+      // Run the client after 4 seconds:
+      Future.delayed(const Duration(seconds: 4), () {
+        InfluxDBHandle().init();
+      });
+    });
   }
 
-  Main.nativeApiLib = DynamicLibrary.open('api.dll');
-  Main.initSerialPort = Main.nativeApiLib.lookup<NativeFunction<Int Function(Pointer<Int8>)>>('initSerial').asFunction<int Function(Pointer<Int8>)>();
-  Main.readSerialPort = Main.nativeApiLib.lookup<NativeFunction<Pointer<CArray> Function(Int, Int, Int)>>('readSerialPort').asFunction<Pointer<CArray> Function(int, int, int)>();
-  Main.delArray = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<CArray>)>>('delArray').asFunction<void Function(Pointer<CArray>)>();
-  Main.closeSerialPort = Main.nativeApiLib.lookup<NativeFunction<Void Function(Int)>>('closeSerialPort').asFunction<void Function(int)>();
-  Main.maximizeWindow = Main.nativeApiLib.lookup<NativeFunction<Void Function()>>('maximizeWindow').asFunction<void Function()>();
 
-  Main.appDir = (await getApplicationDocumentsDirectory()).path;
-  Directory directory = Directory(Main.appDir + r"\mars_nav");
+    Main.nativeApiLib = DynamicLibrary.open('api.dll');
+    Main.initSerialPort = Main.nativeApiLib.lookup<NativeFunction<Int Function(Pointer<Int8>)>>('initSerial').asFunction<int Function(Pointer<Int8>)>();
+    Main.readSerialPort = Main.nativeApiLib.lookup<NativeFunction<Pointer<CArray> Function(Int, Int, Int)>>('readSerialPort').asFunction<Pointer<CArray> Function(int, int, int)>();
+    Main.delArray = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<CArray>)>>('delArray').asFunction<void Function(Pointer<CArray>)>();
+    Main.closeSerialPort = Main.nativeApiLib.lookup<NativeFunction<Void Function(Int)>>('closeSerialPort').asFunction<void Function(int)>();
+    Main.maximizeWindow = Main.nativeApiLib.lookup<NativeFunction<Void Function()>>('maximizeWindow').asFunction<void Function()>();
 
-  if (!directory.existsSync()) {
-    directory.createSync();
-    Directory(Main.appDir + r"\mars_nav\imagery").createSync();
-  } else {
-    directory = Directory(Main.appDir + r"\mars_nav\imagery");
+    Directory directory = Directory(Main.appDir + r"\mars_nav");
+
     if (!directory.existsSync()) {
       directory.createSync();
+      Directory(Main.appDir + r"\mars_nav\imagery").createSync();
+    } else {
+      directory = Directory(Main.appDir + r"\mars_nav\imagery");
+      if (!directory.existsSync()) {
+        directory.createSync();
+      }
     }
-  }
 
   // const portName = "COM6";
   // final Pointer<Int8> nativeString = calloc<Int8>(portName.length + 1);
@@ -171,26 +194,32 @@ void main(List<String> args) async {
   //   print("ERROR opening COM3!");
   // }
 
-  initMeeduPlayer();
+    initMeeduPlayer();
 
-
-  runApp(Home());
+    runApp(Home());
 }
 
 class Home extends StatelessWidget {
   Home({Key? key}) : super(key: key);
 
-  final _controller = SidebarXController(selectedIndex: 0, extended: false);
-  final _key = GlobalKey<ScaffoldState>();
-
-  @override
-  StatelessElement createElement() {
-
-    return StatelessElement(this);
-  }
+  final controller_ = SidebarXController(selectedIndex: 0, extended: false);
+  final key_ = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
+    if (!Main.windowCloseInit) {
+      Main.windowCloseInit = true;
+      FlutterWindowClose.setWindowShouldCloseHandler(() async { // A function to be called before closing:
+        print("Window close is triggered!");
+        Main.dbProcess.kill(ProcessSignal.sigint); // equivalent to CTRL+C
+        int exitCode = await Main.dbProcess.exitCode;
+        print("InfluxDB exit code: $exitCode");
+        InfluxDBHandle().close();
+        return true;
+      });
+    }
+
+
     if (Main.isMainWindow && !Main.appInitialized) {
       Future.delayed(const Duration(seconds: 2), () {
         Main.appInitialized = true;
@@ -219,28 +248,28 @@ class Home extends StatelessWidget {
           final isSmallScreen = MediaQuery.of(context).size.width < 600;
           if (Main.widgetToDisplay != null) {
             return Scaffold(
-              key: _key,
+              key: key_,
               body: Center(
                 child: Main.widgetToDisplay,
               ),
             );
           } else {
             return Scaffold(
-              key: _key,
+              key: key_,
               appBar: isSmallScreen
                   ? AppBar(
                 backgroundColor: Main.canvasColor,
-                title: Text(Main.pageIndexToName[_controller.selectedIndex]),
+                title: Text(Main.pageIndexToName[controller_.selectedIndex]),
               )
                   : null,
-              drawer: CustomSidebarX(controller: _controller),
+              drawer: CustomSidebarX(controller: controller_),
               body: Row(
                 children: [
-                  if (!isSmallScreen) CustomSidebarX(controller: _controller),
+                  if (!isSmallScreen) CustomSidebarX(controller: controller_),
                   Expanded(
                     child: Center(
                       child: MainNavigator(
-                        controller: _controller,
+                        controller: controller_,
                       ),
                     ),
                   ),
@@ -252,6 +281,7 @@ class Home extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class CustomSidebarX extends StatelessWidget {
@@ -269,51 +299,59 @@ class CustomSidebarX extends StatelessWidget {
     if (Main.roverStatus == RoverState.autonomous) {
       bars.addAll([
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/sensorial-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/sensorial-white.png", height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[0],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/history-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/samples-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[2],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/commands-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
+          iconWidget: Image.asset("lib/assets/icons/history-white.png", height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[3],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/command-shell-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/commands-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[4],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/settings-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/command-shell-white.png", height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[5],
+        ),
+        SidebarXItem(
+          iconWidget: Image.asset("lib/assets/icons/settings-white.png", height: Main.iconSize, width: Main.iconSize),
+          label: Main.pageIndexToName[6],
         ),
       ]);
     } else {
       bars.addAll([
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/sensorial-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/sensorial-white.png", height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[0],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/imagery-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/imagery-white.png", height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[1],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/history-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/samples-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[2],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/commands-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
+          iconWidget: Image.asset("lib/assets/icons/history-white.png", height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[3],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/command-shell-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/commands-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[4],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/icons/settings-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/command-shell-white.png", height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[5],
+        ),
+        SidebarXItem(
+          iconWidget: Image.asset("lib/assets/icons/settings-white.png", height: Main.iconSize, width: Main.iconSize),
+          label: Main.pageIndexToName[6],
         ),
       ]);
     }
@@ -330,7 +368,7 @@ class CustomSidebarX extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.asset("lib/icons/team_logo.png"),
+              child: Image.asset("lib/assets/icons/team_logo.png"),
             ),
             const SizedBox(height: 12),
           ],
@@ -407,7 +445,7 @@ class CustomSidebarX extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Visibility(visible: _controller.extended, child: Text(Main.roverBatteryRemainingTime, style: TextStyle(color: Colors.white))),
+                Visibility(visible: _controller.extended, child: Text(Main.roverBatteryRemainingTime, style: const TextStyle(color: Colors.white))),
                 Visibility(visible: _controller.extended, child: const SizedBox(height: 12)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -469,12 +507,14 @@ class MainNavigator extends StatelessWidget {
             case 0:
               return SensoryPage();
             case 1:
-              return HistoryPage();
+              return SamplesPage();
             case 2:
-              return CommandsPage();
+              return HistoryPage();
             case 3:
-              return ShellPage();
+              return CommandsPage();
             case 4:
+              return ShellPage();
+            case 5:
               return SettingsPage();
             default:
               return Text(
@@ -489,12 +529,14 @@ class MainNavigator extends StatelessWidget {
             case 1:
               return ImageryPage();
             case 2:
-              return HistoryPage();
+              return SamplesPage();
             case 3:
-              return CommandsPage();
+              return HistoryPage();
             case 4:
-              return ShellPage();
+              return CommandsPage();
             case 5:
+              return ShellPage();
+            case 6:
               return SettingsPage();
             default:
               return Text(

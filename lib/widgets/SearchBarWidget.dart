@@ -4,8 +4,12 @@ import '../main.dart';
 
 class SearchBarWidget extends StatefulWidget {
 
+  SearchBarWidget({required this.onChanged});
+
   @override
   SearchBarWidgetState createState() => SearchBarWidgetState();
+
+  final ValueChanged<String> onChanged;
 
 }
 
@@ -17,6 +21,7 @@ class SearchBarWidgetState extends State<SearchBarWidget> {
     return TextField(
       cursorColor: Colors.white,
       controller: _controller,
+      onChanged: widget.onChanged,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: 'File Name',
