@@ -40,7 +40,7 @@ dependencies:
   shimmer: 3.0.0
   syncfusion_flutter_charts: 22.1.38
   geekyants_flutter_gauges: 1.0.1
-  influxdb_client: 2.9.0 # TODO: Test it
+  influxdb_client: 2.9.0
   gauge_indicator: 0.4.2
   flutter_meedu_videoplayer: 4.2.15
   ffi: 2.0.2
