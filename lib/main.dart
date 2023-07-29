@@ -76,7 +76,7 @@ class Main { // This class holds all the general variables to the interface as a
   // IMU sensor in Rover: 0 - 180 degrees
   static double xAngle = 155;
   static double yAngle = 20;
-  static double zAngle = 69;
+  static double compassAngle = 69; // equivalent to the z axis angle, 0 - 360 degree
   static double speed = 0.4; // in m/s
 
   // gas sensors: 100 ppm - 10000 ppm
@@ -146,10 +146,9 @@ void main(List<String> args) async {
     });
     Main.dbProcess.stdout.transform(utf8.decoder).listen((data) {
       print('stdout: $data');
-      // Run the client after 4 seconds:
-      Future.delayed(const Duration(seconds: 4), () {
-        InfluxDBHandle().init();
-      });
+    });
+    Future.delayed(const Duration(seconds: 4), () {
+      InfluxDBHandle().init();
     });
   }
 

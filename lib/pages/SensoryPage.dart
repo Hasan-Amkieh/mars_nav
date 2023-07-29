@@ -221,7 +221,7 @@ class SensoryPageState extends State<SensoryPage> {
                             children: [
                               Image.asset("lib/assets/icons/water-blue.png", height: Main.iconSize * 1 , width: Main.iconSize * 1),
                               const SizedBox(width: 10,),
-                              Text("Humiditiy ${Main.humidity}%", style: const TextStyle(color: Colors.white)),
+                              Text("Humidity ${Main.humidity}%", style: const TextStyle(color: Colors.white)),
                             ],
                           ),
                           const SizedBox(height: 10),
@@ -358,6 +358,28 @@ class SensoryPageState extends State<SensoryPage> {
                   ),
                 )
                 ),
+                Flexible(flex:5, child: GraphContainer(
+                  detailsWidget: IconButton(
+                    icon: Image.asset("lib/assets/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    onPressed: () {},
+                  ),
+                  sizeModifier: 1.5,
+                  titleWidget: Text("Speed", style: graphContainerStyle),
+                  iconWidget: Image.asset("lib/assets/icons/compass-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  graph: Column(
+                    children: [
+                      const SizedBox(height: 12,),
+                      // Expanded(
+                      //   child: ,
+                      // ),
+                      const SizedBox(height: 26),
+                      Text(
+                          "${Main.compassAngle}°",
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))
+                    ],
+                  ),
+                )
+                ),
                 separator,
                 Flexible(flex:3, child: GraphContainer(
                   detailsWidget: IconButton(
@@ -384,14 +406,6 @@ class SensoryPageState extends State<SensoryPage> {
                         children: [
                           AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 250),
                           Text("Y-Axis\n${Main.yAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                        ],
-                      ),
-                      const SizedBox(width: 60),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AngleGauge(angle: Main.zAngle, color: const Color(0xFF42A5F5), thickness: 10, height: 250),
-                          Text("Z-Axis\n${Main.zAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
                         ],
                       ),
                     ],
@@ -517,8 +531,8 @@ class SensoryPageState extends State<SensoryPage> {
                       icon: Image.asset("lib/assets/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                       onPressed: () {
                         int x = ShellExecute(0, 'open'.toNativeUtf16(),
-                            'mars_nav.exe'.toNativeUtf16(), r'video_player C:\Users\HasanAmk\Downloads\x\1.mp4'.toNativeUtf16(),
-                            'C:\\Users\\HasanAmk\\Documents\\Projects\\Flutter_Projects\\mars_nav\\build\\windows\\runner\\Debug\\'.toNativeUtf16(), SW_SHOW);
+                            'mars_nav.exe'.toNativeUtf16(), r'video_player 2023-07-23 08.05.30_D_afffffffsad.mp4'.toNativeUtf16(),
+                            r'C:\Users\HasanAmk\Documents\mars_nav\imagery\'.toNativeUtf16(), SW_SHOW);
                         print("exit code: $x");
                       },
                     ),
