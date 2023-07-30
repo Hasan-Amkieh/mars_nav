@@ -9,6 +9,7 @@ import 'package:win32/win32.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../main.dart';
+import '../widgets/CompassWidget.dart';
 
 class TimeData {
   final DateTime x;
@@ -358,20 +359,19 @@ class SensoryPageState extends State<SensoryPage> {
                   ),
                 )
                 ),
+                separator,
                 Flexible(flex:5, child: GraphContainer(
                   detailsWidget: IconButton(
                     icon: Image.asset("lib/assets/icons/data-blue.png",  width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                     onPressed: () {},
                   ),
                   sizeModifier: 1.5,
-                  titleWidget: Text("Speed", style: graphContainerStyle),
+                  titleWidget: Text("Compass", style: graphContainerStyle),
                   iconWidget: Image.asset("lib/assets/icons/compass-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
                   graph: Column(
                     children: [
                       const SizedBox(height: 12,),
-                      // Expanded(
-                      //   child: ,
-                      // ),
+                      CompassWidget(angle: Main.compassAngle),
                       const SizedBox(height: 26),
                       Text(
                           "${Main.compassAngle}°",
@@ -396,16 +396,16 @@ class SensoryPageState extends State<SensoryPage> {
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          AngleGauge(angle: Main.xAngle, color: const Color(0xFF00E676), thickness: 10, height: 250),
-                          Text("X-Axis\n${Main.xAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                          AngleGauge(angle: Main.xAngle, color: const Color(0xFF00E676), thickness: 10, height: 220),
+                          Text("X-Axis ${Main.xAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
                         ],
                       ),
                       const SizedBox(width: 60),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 250),
-                          Text("Y-Axis\n${Main.yAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                          AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 220),
+                          Text("Y-Axis ${Main.yAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
                         ],
                       ),
                     ],

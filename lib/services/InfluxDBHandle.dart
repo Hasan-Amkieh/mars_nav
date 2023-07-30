@@ -42,13 +42,13 @@ class InfluxDBHandle {
 
       // read(DateTime.now().toUtc().subtract(Duration(hours: 3)), DateTime.now().toUtc(), "mem");
 
-      for (int i = 0; i < 1000; i++) {
-        DateTime randomDateTime = generateRandomDateTime();
-        String randomValueName = generateRandomValueName();
-        double randomValue = generateRandomValue();
-
-        write(randomDateTime, randomValueName, randomValue);
-      }
+      // for (int i = 0; i < 1000; i++) {
+      //   DateTime randomDateTime = generateRandomDateTime();
+      //   String randomValueName = generateRandomValueName();
+      //   double randomValue = generateRandomValue();
+      //
+      //   write(randomDateTime, randomValueName, randomValue);
+      // }
 
     } else {
       print("InfluxDB client has already been initialized");
