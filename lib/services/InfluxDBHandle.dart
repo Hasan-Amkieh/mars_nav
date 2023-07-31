@@ -18,13 +18,34 @@ class InfluxDBHandle {
   static const token = "u8kIvdK-KLv_ttutkxfSc2Gb7xUI-8K0oWGl6-QmrNbBVB7FmX79KM6ljL6yPPMb909mBG4JjpG4hYLjrKBS-Q==";
   static const url = "http://localhost:8086";
 
-  static const List<String> valueNames = ['temperature', 'humidity', 'air-pressure', 'drone-altitude', 'light-intensity', 'UV-light-intensity',
-    'rover-signal-strength', 'x-angle', 'y-angle', 'compass-angle', 'rover-speed', 'CPU-util', 'GPU-util', 'used-RAM', 'battery-voltage', 'power-consumption',
-    'CO', 'CO2', 'CH4, C4H10, C3H8', 'NH3, NO2, C6H6', 'H2', 'electrical-current', 'motors-current', 'PM1.0', 'PM2.5', 'PM10.0'];
-
-  static const List<String> valueNamesSpaced = ["temperature", "humidity", "air pressure", "drone altitude", "light intensity", "UV light intensity",
-    "rover signal strength", "x angle", "y angle", "compass angle", "rover speed", "CPU util", "GPU util", "used RAM", "battery voltage", "power consumption",
-    "CO", "CO2", "CH4, C4H10, C3H8", "NH3, NO2, C6H6", "H2", "electrical current", "motors current", "PM1.0", "PM2.5", "PM10.0"];
+  static const Map<String, String> valueNames = {
+    'temperature' : 'temperature',
+    'humidity' : 'humidity',
+    'air-pressure' : 'Air Pressure',
+    'drone-altitude' : 'Drone Altitude',
+    'light-intensity' : 'Light Intensity',
+    'UV-light-intensity' : 'UV Light Intensity',
+    'rover-signal-strength' : 'Rover Signal Strength',
+    'x-angle' : 'x Angle',
+    'y-angle' : 'y Angle',
+    'compass-angle' : 'Compass Angle',
+    'rover-speed' : 'Rover Speed',
+    'CPU-util' : 'CPU Util',
+    'GPU-util' : 'GPU Util',
+    'used-RAM' : 'Used RAM',
+    'battery-voltage' : 'Battery Voltage',
+    'power-consumption' : 'Power Consumption',
+    'CO' : 'CO',
+    'CO2' : 'CO₂',
+    'CH4, C4H10, C3H8' : 'CH₄, C₄H₁₀, C₃H₈',
+    'NH3, NO2, C6H6' : 'NH₃, NO₂, C₆H₆',
+    'H2' : 'H₂',
+    'electrical-current' : 'Electrical Current',
+    'motors-current' : 'Motors Current',
+    'PM1.0' : 'PM1.0',
+    'PM2.5' : 'PM2.5',
+    'PM10.0' : 'PM10.0',
+  };
 
   void init() async {
 
@@ -68,7 +89,7 @@ class InfluxDBHandle {
 
   static String generateRandomValueName() {
     Random random = Random();
-    return valueNames[random.nextInt(valueNames.length)];
+    return valueNames.keys.toList()[random.nextInt(valueNames.length)];
   }
 
   static double generateRandomValue() {
@@ -82,16 +103,28 @@ class InfluxDBHandle {
 
   }
 
-  void read(DateTime from, DateTime to, String sensorName) async {
+  Future<List<String>> read(DateTime from, DateTime to, List<String> sensorNames) async {
 
-    var query = '''from(bucket: "$bucket") |> range(start: ${from.millisecondsSinceEpoch * 1000000}, stop: ${to.millisecondsSinceEpoch * 1000000}) |> filter(fn: (r) => r["_measurement"] == "$sensorName")''';
+    String measurementPredicate = "";
+    sensorNames.forEach((element) {
+      if (measurementPredicate.isEmpty) {
+        measurementPredicate = 'r["_measurement"] == "$element"';
+      } else {
+        measurementPredicate += 'or r["_measurement"] == "$element"';
+      }
+    });
+
+    var query = '''from(bucket: "$bucket") |> range(start: ${from.millisecondsSinceEpoch * 1000000}, stop: ${to.millisecondsSinceEpoch * 1000000}) |> filter(fn: (r) => $measurementPredicate)''';
 
     var queryService = _client.getQueryService();
 
+    List<String> recordsFormatted = [];
     var records = await queryService.query(query);
     await records.forEach((record) {
-      print('${record['_time']}: ${record['_field']} = ${record['_value']}');
+      recordsFormatted.add('${record['_time']} | ${record['_measurement']} | ${record['_value']}');
     });
+
+    return recordsFormatted;
 
   }
 

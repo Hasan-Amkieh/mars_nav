@@ -1,10 +1,15 @@
+import "dart:developer";
+
 import "package:flutter/material.dart";
 import "package:mars_nav/services/InfluxDBHandle.dart";
+import "package:syncfusion_flutter_charts/charts.dart";
 import "package:table_calendar/table_calendar.dart";
 
 import "../main.dart";
 import "../widgets/ToggleButton.dart";
 import 'dart:collection';
+
+import "SensoryPage.dart";
 
 class HistoryPage extends StatefulWidget {
 
@@ -22,17 +27,100 @@ class HistoryPageState extends State<HistoryPage> {
 
   List<ToggleButton> toggleButtonsList = [];
 
+  Map<String, List<TimeData>> data = {};
+
+  static const List<Color> linesColors = [
+    Color(0xFFFF9800),
+    Color(0xFFF44336),
+    Color(0xFFE91E63),
+    Color(0xFF9C27B0),
+    Color(0xFF673AB7),
+    Color(0xFF3F51B5),
+    Color(0xFF2196F3),
+    Color(0xFF03A9F4),
+    Color(0xFF00BCD4),
+    Color(0xFF009688),
+    Color(0xFF4CAF50),
+    Color(0xFF8BC34A),
+    Color(0xFFCDDC39),
+    Color(0xFFFFEB3B),
+    Color(0xFFFFC107),
+    Color(0xFFFF9800),
+    Color(0xFFFF5722),
+    Color(0xFF795548),
+    Color(0xFF9E9E9E),
+    Color(0xFF607D8B),
+    Color(0xFF00ACC1),
+    Color(0xFF006064),
+    Color(0xFF00838F),
+    Color(0xFF1A237E),
+    Color(0xff311B92),
+    Color(0xff4A148C),
+    Color(0xff1B5E20),
+    Color(0xff33691E),
+    Color(0xFF827717),
+    Color(0xffF57F17),
+    Color(0xffFF6F00),
+    Color(0xFFE65100),
+    Color(0xFFBF360C),
+    Color(0xFF3E2723),
+    Color(0xFF424242),
+    Color(0xFF37474F),
+    Color(0xFF01579B),
+    Color(0xFF1B5E20),
+    Color(0xFFFF6F00),
+    Color(0xFFF57F17),
+    Color(0xFFF44336),
+    Color(0xFFE91E63),
+    Color(0xFF9C27B0),
+    Color(0xFF673AB7),
+    Color(0xFF3F51B5),
+    Color(0xFF2196F3),
+    Color(0xFF00BCD4),
+    Color(0xFF009688),
+    Color(0xFF4CAF50),
+    Color(0xFFFF5722),
+  ];
+
   @override
   void initState() {
-    InfluxDBHandle.valueNamesSpaced.forEach((element) {
+    InfluxDBHandle.valueNames.values.forEach((element) {
       toggleButtonsList.add(ToggleButton(text: element, isSelected: true));
+    });
+
+    DateTime now = DateTime.now();
+    InfluxDBHandle().read(DateTime(now.year, now.month-1, now.day), now, InfluxDBHandle.valueNames.keys.toList()).then((value) {
+      value.forEach((element) {
+        List<String> parts = element.split(" | ");
+        if (!data.containsKey(parts[1])) {
+          data[parts[1]] = <TimeData>[];
+        }
+        data[parts[1]]?.add(TimeData(DateTime.parse(parts[0]), double.parse(parts[2])));
+      });
+
+      series = [];
+      data.forEach((key, value) {
+        series.add(LineSeries<TimeData, DateTime>(
+          markerSettings: const MarkerSettings(isVisible: true),
+          dataSource: value,
+          xValueMapper: (TimeData data, _) => data.x,
+          yValueMapper: (TimeData data, _) => data.y,
+          // color: const Color(0xFF7EB8DA),
+          // borderWidth: 3,
+          name: key,
+        ));
+      });
     });
 
     super.initState();
   }
 
+  static bool isConfirmed = false;
+  List<LineSeries> series = [];
+
   @override
   Widget build(BuildContext context) {
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
       child: Column(
@@ -42,7 +130,7 @@ class HistoryPageState extends State<HistoryPage> {
             children: [
               OutlinedButton.icon(
                 icon: const Icon(Icons.date_range),
-                label: Text((fromPeriod == null || toPeriod == null) ? "Choose Period" : ("$fromPeriod-$toPeriod")),
+                label: Text((fromPeriod == null || toPeriod == null) ? "Choose Period" : ("${fromPeriod?.day}/${fromPeriod?.month}/${fromPeriod?.year} - ${toPeriod?.day}/${toPeriod?.month}/${toPeriod?.year}")),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Theme.of(context).primaryColor).copyWith(width: 1),
                 ),
@@ -52,7 +140,14 @@ class HistoryPageState extends State<HistoryPage> {
                     builder: (context) {
                       return TableRangeExample();
                     },
-                  );
+                  ).then((value) {
+                    setState(() {
+                      if (isConfirmed) {
+                        fromPeriod = TableRangeExampleState.rangeStart;
+                        toPeriod = TableRangeExampleState.rangeEnd;
+                      }
+                    });
+                  });
                 },
               ),
               OutlinedButton.icon(
@@ -121,6 +216,75 @@ class HistoryPageState extends State<HistoryPage> {
               ),
             ],
           ),
+          AspectRatio(
+            aspectRatio: 2.3,
+            child: SfCartesianChart(
+              trackballBehavior: TrackballBehavior(
+                enable: true,
+                lineType: TrackballLineType.vertical,
+                activationMode: ActivationMode.singleTap,
+                builder: (context, trackballDetails) {
+                  double number = trackballDetails.series?.dataSource[trackballDetails.pointIndex ?? 0].y;
+                  String number_str = "";
+                  String name = trackballDetails.series?.name ?? "ERROR";
+                  if (name.startsWith("Visible Light")) {
+                    name = "Visible Light";
+                    number_str = number.toStringAsPrecision(3);
+                  } else if (name.startsWith("UV Light")) {
+                    name = "UV Light";
+                    number = number * 100;
+                    number_str = "${number.toStringAsPrecision(3)}%";
+                  }
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Text(
+                      '$name $number_str',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  );
+                },
+                tooltipSettings: InteractiveTooltip(
+                    enable: true,
+                    color: Colors.grey[900],
+                    borderWidth: 4,
+                    arrowWidth: 2,
+                    arrowLength: 6
+                ),
+                markerSettings: const TrackballMarkerSettings(
+                  markerVisibility: TrackballVisibilityMode.visible,
+                  shape: DataMarkerType.diamond,
+                  width: 6,
+                  height: 6,
+                  borderWidth: 2,
+                ),
+              ),
+              plotAreaBorderColor: Colors.transparent,
+              legend: const Legend(
+                overflowMode: LegendItemOverflowMode.wrap,
+                isVisible: true,
+                position: LegendPosition.top,
+                textStyle: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+              primaryXAxis: DateTimeAxis(
+                  isVisible: true,
+                  labelStyle: const TextStyle(color: Colors.white),
+                  minorGridLines: const MinorGridLines(width: 0),
+                  majorGridLines: const MajorGridLines(width: 0)
+              ),
+              primaryYAxis: NumericAxis(
+                isVisible: false,
+                minimum: 0,
+                maximum: 100, // note that all the data is converted to 100, but converted back when shown in the trackball
+              ),
+              borderWidth: 0,
+              series: series,
+            ),
+          )
         ],
       ),
     );
@@ -158,7 +322,6 @@ int getHashCode(DateTime key) {
   return key.day * 1000000 + key.month * 10000 + key.year;
 }
 
-/// Returns a list of [DateTime] objects from [first] to [last], inclusive.
 List<DateTime> daysInRange(DateTime first, DateTime last) {
   final dayCount = last.difference(first).inDays + 1;
   return List.generate(
@@ -168,81 +331,117 @@ List<DateTime> daysInRange(DateTime first, DateTime last) {
 }
 
 final kToday = DateTime.now();
-final kFirstDay = DateTime(kToday.year, kToday.month - 3, kToday.day);
-final kLastDay = DateTime(kToday.year, kToday.month + 3, kToday.day);
+final kFirstDay = DateTime(kToday.year - 1, kToday.month, kToday.day);
+final kLastDay = DateTime(kToday.year + 1, kToday.month, kToday.day);
 
 class TableRangeExample extends StatefulWidget {
   @override
-  _TableRangeExampleState createState() => _TableRangeExampleState();
+  TableRangeExampleState createState() => TableRangeExampleState();
 }
 
-class _TableRangeExampleState extends State<TableRangeExample> {
+class TableRangeExampleState extends State<TableRangeExample> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode
       .toggledOn; // Can be toggled on/off by longpressing a date
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  DateTime? _rangeStart;
-  DateTime? _rangeEnd;
+  static DateTime? rangeStart;
+  static DateTime? rangeEnd;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          TableCalendar(
-            firstDay: kFirstDay,
-            lastDay: kLastDay,
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            rangeStartDay: _rangeStart,
-            rangeEndDay: _rangeEnd,
-            calendarFormat: _calendarFormat,
-            rangeSelectionMode: _rangeSelectionMode,
-            onDaySelected: (selectedDay, focusedDay) {
-              if (!isSameDay(_selectedDay, selectedDay)) {
+      body: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TableCalendar(
+              daysOfWeekStyle: const DaysOfWeekStyle(weekdayStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic), weekendStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic)),
+              calendarStyle: const CalendarStyle(defaultTextStyle: TextStyle(color: Colors.white), weekendTextStyle: TextStyle(color: Colors.white)),
+              firstDay: kFirstDay,
+              lastDay: kLastDay,
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              rangeStartDay: rangeStart,
+              rangeEndDay: rangeEnd,
+              calendarFormat: _calendarFormat,
+              rangeSelectionMode: _rangeSelectionMode,
+              onDaySelected: (selectedDay, focusedDay) {
+                if (!isSameDay(_selectedDay, selectedDay)) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                    rangeStart = null; // Important to clean those
+                    rangeEnd = null;
+                    _rangeSelectionMode = RangeSelectionMode.toggledOff;
+                  });
+                }
+              },
+              onRangeSelected: (start, end, focusedDay) {
                 setState(() {
-                  _selectedDay = selectedDay;
+                  _selectedDay = null;
                   _focusedDay = focusedDay;
-                  _rangeStart = null; // Important to clean those
-                  _rangeEnd = null;
-                  _rangeSelectionMode = RangeSelectionMode.toggledOff;
+                  rangeStart = start;
+                  rangeEnd = end;
+                  _rangeSelectionMode = RangeSelectionMode.toggledOn;
                 });
-              }
-            },
-            onRangeSelected: (start, end, focusedDay) {
-              setState(() {
-                _selectedDay = null;
+              },
+              onFormatChanged: (format) {
+                if (_calendarFormat != format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                }
+              },
+              onPageChanged: (focusedDay) {
                 _focusedDay = focusedDay;
-                _rangeStart = start;
-                _rangeEnd = end;
-                _rangeSelectionMode = RangeSelectionMode.toggledOn;
-              });
-            },
-            onFormatChanged: (format) {
-              if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              }
-            },
-            onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
-            },
-          ),
-          TextButton(
-            child: Text("Confirm"),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          TextButton(
-            child: Text("Cancel"),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  style: ButtonStyle(
+                    side: MaterialStateProperty.all(BorderSide(color: Theme.of(context).primaryColor).copyWith(width: 2)),
+                    backgroundColor: MaterialStateProperty.resolveWith((states) {
+                      if (states.isNotEmpty) {
+                        if (MaterialState.hovered == states.first) {
+                          return Colors.transparent;
+                        }
+                      }
+                      return Theme.of(context).primaryColor;
+                    }),
+                  ),
+                  child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    HistoryPageState.isConfirmed = false;
+                    Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  style: ButtonStyle(
+                    side: MaterialStateProperty.all(BorderSide(color: Theme.of(context).primaryColor).copyWith(width: 2)),
+                    backgroundColor: MaterialStateProperty.resolveWith((states) {
+                      if (states.isNotEmpty) {
+                        if (MaterialState.hovered == states.first) {
+                          return Colors.transparent;
+                        }
+                      }
+                      return Theme.of(context).primaryColor;
+                    }),
+                  ),
+                  child: const Text("Confirm", style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    HistoryPageState.isConfirmed = true;
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
