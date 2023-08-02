@@ -1,6 +1,7 @@
 import "dart:developer";
 
 import "package:flutter/material.dart";
+import "package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart";
 import "package:mars_nav/services/InfluxDBHandle.dart";
 import "package:syncfusion_flutter_charts/charts.dart";
 import "package:table_calendar/table_calendar.dart";
@@ -85,11 +86,15 @@ class HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     InfluxDBHandle.valueNames.values.forEach((element) {
-      toggleButtonsList.add(ToggleButton(text: element, isSelected: true));
+      bool isSel = false;
+      if (element == "CPU Util" || element == "GPU Util" || element == "Used RAM") {
+        isSel = true;
+      }
+      toggleButtonsList.add(ToggleButton(text: element, isSelected: isSel));
     });
 
     DateTime now = DateTime.now();
-    InfluxDBHandle().read(DateTime(now.year, now.month-1, now.day), now, InfluxDBHandle.valueNames.keys.toList()).then((value) {
+    InfluxDBHandle().read(DateTime(now.year, now.month, now.day).subtract(const Duration(days: 15)), now, InfluxDBHandle.valueNames.keys.toList()).then((value) {
       value.forEach((element) {
         List<String> parts = element.split(" | ");
         if (!data.containsKey(parts[1])) {
@@ -98,25 +103,45 @@ class HistoryPageState extends State<HistoryPage> {
         data[parts[1]]?.add(TimeData(DateTime.parse(parts[0]), double.parse(parts[2])));
       });
 
-      series = [];
-      data.forEach((key, value) {
-        series.add(LineSeries<TimeData, DateTime>(
-          markerSettings: const MarkerSettings(isVisible: true),
-          dataSource: value,
-          xValueMapper: (TimeData data, _) => data.x,
-          yValueMapper: (TimeData data, _) => data.y,
-          // color: const Color(0xFF7EB8DA),
-          // borderWidth: 3,
-          name: key,
-        ));
-      });
+      updateGraph();
     });
 
     super.initState();
   }
 
+  void updateGraph() {
+    series = [];
+    int index = 0;
+    List<String> labels = [];
+    toggleButtonsList.forEach((element) {
+      if (element.isSelected) {
+        labels.add(element.text);
+      }
+    });
+    data.forEach((key, value) {
+      if (labels.contains(InfluxDBHandle.valueNames[key])) {
+        series.add(LineSeries<TimeData, DateTime>(
+          markerSettings: const MarkerSettings(isVisible: true),
+          dataSource: value,
+          xValueMapper: (TimeData data, _) => data.x,
+          yValueMapper: (TimeData data, _) => data.y,
+          color: linesColors[index],
+          // borderWidth: 3,
+          name: key,
+        ));
+      }
+      if (++index == linesColors.length) {
+        index = 0;
+      }
+    });
+  }
+
   static bool isConfirmed = false;
   List<LineSeries> series = [];
+
+  DateTime currentPlayerTime = DateTime.now();
+
+  double currentPlayerTimePercent = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -143,97 +168,231 @@ class HistoryPageState extends State<HistoryPage> {
                   ).then((value) {
                     setState(() {
                       if (isConfirmed) {
+                        print("setting the dates to ${TableRangeExampleState.rangeStart} and ${TableRangeExampleState.rangeEnd} ");
                         fromPeriod = TableRangeExampleState.rangeStart;
                         toPeriod = TableRangeExampleState.rangeEnd;
+                        currentPlayerTime = TableRangeExampleState.rangeStart!;
                       }
                     });
                   });
                 },
               ),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.edit),
-                label: const Text("Choose Fields"),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Theme.of(context).primaryColor).copyWith(width: 1),
-                ),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        backgroundColor: Main.actionColor,
-                        title: const Text('Graph Fields', style: TextStyle(color: Colors.white)),
-                        content: StatefulBuilder(
-                          builder: (context, setState_) {
-                            return SizedBox(
-                              width: 400,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Wrap(
-                                    spacing: 8.0,
-                                    runSpacing: 8.0,
-                                    children: toggleButtonsList,
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.edit),
+                    label: const Text("Choose Fields"),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Theme.of(context).primaryColor).copyWith(width: 1),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            backgroundColor: Main.actionColor,
+                            title: const Text('Graph Fields', style: TextStyle(color: Colors.white)),
+                            content: StatefulBuilder(
+                              builder: (context, setState_) {
+                                return SizedBox(
+                                  width: 400,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Wrap(
+                                        spacing: 8.0,
+                                        runSpacing: 8.0,
+                                        children: toggleButtonsList,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+                                            TextButton(child: const Text("SELECT ALL"), onPressed: () {
+                                              setState_(() {
+                                                for (ToggleButton bt in toggleButtonsList) {
+                                                  bt.isSelected = true;
+                                                  bt.state.isSelected = true;
+                                                  bt.state.setState(() {});
+                                                }
+                                              });
+                                            }),
+                                            TextButton(child: const Text("UNSELECT ALL"), onPressed: () {
+                                              setState_(() {
+                                                for (ToggleButton bt in toggleButtonsList) {
+                                                  bt.isSelected = false;
+                                                  bt.state.isSelected = false;
+                                                  bt.state.setState(() {});
+                                                }
+                                              });
+                                            }),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        TextButton(child: const Text("SELECT ALL"), onPressed: () {
-                                          setState_(() {
-                                            for (ToggleButton bt in toggleButtonsList) {
-                                              bt.isSelected = true;
-                                              bt.state.isSelected = true;
-                                              bt.state.setState(() {});
-                                            }
-                                          });
-                                        }),
-                                        TextButton(child: const Text("UNSELECT ALL"), onPressed: () {
-                                          setState_(() {
-                                            for (ToggleButton bt in toggleButtonsList) {
-                                              bt.isSelected = false;
-                                              bt.state.isSelected = false;
-                                              bt.state.setState(() {});
-                                            }
-                                          });
-                                        }),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      );
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ).then((value) {
+                        setState(() {
+                          updateGraph();
+                        });
+                      });
                     },
-                  ).then((value) {
-                    setState(() {});
-                  });
-                },
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.picture_in_picture, color: Theme.of(context).primaryColor),
+                    onPressed: () {
+                      ;
+                    },
+                  ),
+                ],
               ),
             ],
+          ),
+          Visibility(
+            visible: (fromPeriod != null && toPeriod != null),
+            child: Row(
+              children: [
+                Slider(
+                  value: currentPlayerTimePercent,
+                  min: 0,
+                  max: 100,
+                  onChanged: (newValue) {
+                    setState(() {
+                      currentPlayerTimePercent = newValue;
+                      int x = ((toPeriod!.millisecondsSinceEpoch - fromPeriod!.millisecondsSinceEpoch) * (currentPlayerTimePercent / 100.0)).toInt();
+                      currentPlayerTime = DateTime.fromMillisecondsSinceEpoch(fromPeriod!.millisecondsSinceEpoch + x);
+                    });
+                  },
+                ),
+                Text("${currentPlayerTime.year}-${currentPlayerTime.month}-${currentPlayerTime.day} ${currentPlayerTime.hour}:${currentPlayerTime.minute}", style: const TextStyle(color: Colors.white)),
+              ],
+            ),
           ),
           AspectRatio(
             aspectRatio: 2.3,
             child: SfCartesianChart(
               trackballBehavior: TrackballBehavior(
+                lineColor: Colors.white.withOpacity(0.5),
                 enable: true,
                 lineType: TrackballLineType.vertical,
                 activationMode: ActivationMode.singleTap,
                 builder: (context, trackballDetails) {
+                  DateTime time = trackballDetails.series?.dataSource[trackballDetails.pointIndex ?? 0].x;
                   double number = trackballDetails.series?.dataSource[trackballDetails.pointIndex ?? 0].y;
                   String number_str = "";
                   String name = trackballDetails.series?.name ?? "ERROR";
-                  if (name.startsWith("Visible Light")) {
-                    name = "Visible Light";
-                    number_str = number.toStringAsPrecision(3);
-                  } else if (name.startsWith("UV Light")) {
-                    name = "UV Light";
+                  if (name.startsWith("UV-light-intensity")) {
+                    name = "UV Light Intensity";
                     number = number * 100;
+                    number_str = "${number.toStringAsPrecision(2)}%";
+                  } else if (name.startsWith("CPU-util")) {
+                    name = "CPU Util";
+                    number = number * 1;
+                    number_str = "${number.toStringAsPrecision(2)}%";
+                  } else if (name.startsWith("GPU-util")) {
+                    name = "GPU Util";
+                    number = number * 1;
+                    number_str = "${number.toStringAsPrecision(2)}%";
+                  } else if (name.startsWith("used-RAM")) {
+                    name = "Used RAM";
+                    number = number * 0.04;
+                    number_str = "${number.toStringAsPrecision(2)} GB";
+                  } else if (name.startsWith("air-pressure")) {
+                    name = "Air Pressure";
+                    number = number * 100;
+                    number_str = "${number.toStringAsPrecision(3)} hPa";
+                  } else if (name.startsWith("humidity")) {
+                    name = "Humidity";
+                    number = number * 1;
                     number_str = "${number.toStringAsPrecision(3)}%";
+                  } else if (name.startsWith("temperature")) {
+                    name = "Temperature";
+                    number = number * 1;
+                    number_str = "${number.toStringAsPrecision(2)} C°";
+                  } else if (name.startsWith("drone-altitude")) {
+                    name = "Drone Altitude";
+                    number = number * 10;
+                    number_str = "$number m";
+                  } else if (name.startsWith("light-intensity")) {
+                    name = "Light Intensity";
+                    number = number * 100;
+                    number_str = "$number lux";
+                  } else if (name.startsWith("rover-signal-strength")) {
+                    name = "Rover Signal Strength";
+                    number = number * 0.1;
+                    number_str = "${number.toStringAsPrecision(2)} dB";
+                  } else if (name.startsWith("x-angle")) {
+                    name = "X Angle";
+                    number = number * 1.8;
+                    number_str = "${number.toStringAsPrecision(3)}°";
+                  } else if (name.startsWith("y-angle")) {
+                    name = "Y Angle";
+                    number = number * 1.8;
+                    number_str = "${number.toStringAsPrecision(3)}°";
+                  } else if (name.startsWith("compass-angle")) {
+                    name = "Compass Angle";
+                    number = number * 3.6;
+                    number_str = "${number.toStringAsPrecision(3)}°";
+                  } else if (name.startsWith("battery-voltage")) {
+                    name = "Battery Voltage";
+                    number = number * 0.24;
+                    number_str = "${number.toStringAsPrecision(2)} V";
+                  } else if (name.startsWith("power-consumption")) {
+                    name = "Power Consumption";
+                    number = number * 10;
+                    number_str = "${number.toStringAsPrecision(2)} W";
+                  } else if (name.startsWith("rover-speed")) {
+                    name = "Rover Speed";
+                    number = number / 100;
+                    number_str = "${number.toStringAsPrecision(2)} m/s";
+                  } else if (name.startsWith("CO")) {
+                    name = "CO";
+                    number = number * 100;
+                    number_str = "${number.toStringAsFixed(1)} ppm";
+                  } else if (name.startsWith("CO2")) {
+                    name = "CO₂";
+                    number = number * 100;
+                    number_str = "${number.toStringAsFixed(1)} ppm";
+                  } else if (name.startsWith("H2")) {
+                    name = "H₂";
+                    number = number * 100;
+                    number_str = "${number.toStringAsFixed(1)} ppm";
+                  } else if (name.startsWith("CH4 C4H10 C3H8")) {
+                    name = "CH₄ C₄H₁₀ C₃H₈";
+                    number = number * 100;
+                    number_str = "${number.toStringAsFixed(1)} ppm";
+                  } else if (name.startsWith("NH3 NO2 C6H6")) {
+                    name = "NH₃ NO₂ C₆H₆";
+                    number = number * 100;
+                    number_str = "${number.toStringAsFixed(1)} ppm";
+                  } else if (name.startsWith("PM1.0")) {
+                    name = "PM1.0";
+                    number = number * 1;
+                    number_str = "${number.toStringAsFixed(1)} µg/m³";
+                  } else if (name.startsWith("PM2.5")) {
+                    name = "PM2.5";
+                    number = number * 1;
+                    number_str = "${number.toStringAsFixed(1)} µg/m³";
+                  } else if (name.startsWith("PM10.0")) {
+                    name = "PM10.0";
+                    number = number * 1;
+                    number_str = "${number.toStringAsFixed(1)} µg/m³";
+                  } else if (name.startsWith("electrical-current")) {
+                    name = "Electrical Current";
+                    number = number * 1;
+                    number_str = "${number.toStringAsFixed(1)} A";
+                  } else if (name.startsWith("motors-current")) {
+                    name = "Motors Current";
+                    number = number * 1;
+                    number_str = "${number.toStringAsFixed(1)} A";
                   }
 
                   return Container(
@@ -243,7 +402,7 @@ class HistoryPageState extends State<HistoryPage> {
                     ),
                     padding: const EdgeInsets.all(6),
                     child: Text(
-                      '$name $number_str',
+                      '${time.hour < 10 ? "0" : ""}${time.hour}:${time.minute < 10 ? "0" : ""}${time.minute} $name $number_str',
                       style: const TextStyle(color: Colors.white),
                     ),
                   );
