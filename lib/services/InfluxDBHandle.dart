@@ -59,7 +59,8 @@ class InfluxDBHandle {
           bucket: bucket,
           username: username,
           password: pass,
-          debug: true);
+          debug: true
+      );
 
       // read(DateTime.now().toUtc().subtract(Duration(hours: 3)), DateTime.now().toUtc(), "mem");
 
@@ -110,13 +111,16 @@ class InfluxDBHandle {
       if (measurementPredicate.isEmpty) {
         measurementPredicate = 'r["_measurement"] == "$element"';
       } else {
-        measurementPredicate += 'or r["_measurement"] == "$element"';
+        measurementPredicate += ' or r["_measurement"] == "$element"';
       }
     });
 
-    var query = '''from(bucket: "$bucket") |> range(start: ${from.millisecondsSinceEpoch * 1000000}, stop: ${to.millisecondsSinceEpoch * 1000000}) |> filter(fn: (r) => $measurementPredicate)''';
+    var query = '''from(bucket: "$bucket") |> range(start: ${(from.millisecondsSinceEpoch / 1000).toInt()}, stop: ${(to.millisecondsSinceEpoch / 1000).toInt()}) |> filter(fn: (r) => $measurementPredicate)''';
 
-    var queryService = _client.getQueryService();
+    print(query);
+    var queryService = _client.getQueryService(queryOptions: QueryOptions(
+      gzip: true
+    ));
 
     List<String> recordsFormatted = [];
     var records = await queryService.query(query);

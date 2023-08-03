@@ -1,8 +1,8 @@
-import "dart:developer";
+import "dart:async";
 
 import "package:flutter/material.dart";
-import "package:geekyants_flutter_gauges/geekyants_flutter_gauges.dart";
 import "package:mars_nav/services/InfluxDBHandle.dart";
+import "package:mars_nav/widgets/SpeedButton.dart";
 import "package:syncfusion_flutter_charts/charts.dart";
 import "package:table_calendar/table_calendar.dart";
 
@@ -83,6 +83,8 @@ class HistoryPageState extends State<HistoryPage> {
     Color(0xFFFF5722),
   ];
 
+  List<String> labels = []; // will hold the required the value names that are selected from the toggleButtons
+
   @override
   void initState() {
     InfluxDBHandle.valueNames.values.forEach((element) {
@@ -94,7 +96,20 @@ class HistoryPageState extends State<HistoryPage> {
     });
 
     DateTime now = DateTime.now();
-    InfluxDBHandle().read(DateTime(now.year, now.month, now.day).subtract(const Duration(days: 15)), now, InfluxDBHandle.valueNames.keys.toList()).then((value) {
+    updateData(DateTime(now.year, now.month, now.day).subtract(const Duration(days: 60)), now);
+
+    super.initState();
+  }
+
+  void updateData(DateTime from, DateTime to) {
+    print("$from to $to");
+    data = {};
+    updateLabels();
+    List<String> transLabels = labels.map((e) {
+      return InfluxDBHandle.valueNames.keys.firstWhere((k) => InfluxDBHandle.valueNames[k] == e, orElse: () => "");
+    }).toList();
+    print("tranlated table: $transLabels");
+    InfluxDBHandle().read(from, to, transLabels).then((value) {
       value.forEach((element) {
         List<String> parts = element.split(" | ");
         if (!data.containsKey(parts[1])) {
@@ -103,21 +118,24 @@ class HistoryPageState extends State<HistoryPage> {
         data[parts[1]]?.add(TimeData(DateTime.parse(parts[0]), double.parse(parts[2])));
       });
 
-      updateGraph();
+      setState(() {
+        updateGraph();
+      });
     });
-
-    super.initState();
   }
 
-  void updateGraph() {
-    series = [];
-    int index = 0;
-    List<String> labels = [];
+  void updateLabels() {
+    labels = [];
     toggleButtonsList.forEach((element) {
       if (element.isSelected) {
         labels.add(element.text);
       }
     });
+  }
+
+  void updateGraph() {
+    series = [];
+    int index = 0;
     data.forEach((key, value) {
       if (labels.contains(InfluxDBHandle.valueNames[key])) {
         series.add(LineSeries<TimeData, DateTime>(
@@ -126,13 +144,13 @@ class HistoryPageState extends State<HistoryPage> {
           xValueMapper: (TimeData data, _) => data.x,
           yValueMapper: (TimeData data, _) => data.y,
           color: linesColors[index],
-          // borderWidth: 3,
           name: key,
         ));
       }
       if (++index == linesColors.length) {
         index = 0;
       }
+      setState(() {});
     });
   }
 
@@ -142,6 +160,41 @@ class HistoryPageState extends State<HistoryPage> {
   DateTime currentPlayerTime = DateTime.now();
 
   double currentPlayerTimePercent = 0;
+
+  Timer? _timer;
+  List<TimeData> _dataPoints = [];
+  double timePassed = 0; // if reaches to animationLength, then stop
+  int toWait = 2; // variable depending the playing speed
+  int animationLength = 30; // after the 30 seconds, stop
+  bool isAnimRunning = false;
+
+  void _startTimer() {
+    isAnimRunning = true;
+    _timer = Timer.periodic(Duration(seconds: toWait), (timer) {
+      timePassed = timePassed + toWait;
+      if (timePassed > animationLength) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _dataPoints = _getDataInBetween(timePassed / animationLength);
+        });
+      }
+    });
+  }
+
+  List<TimeData> _getDataInBetween(double from) {
+
+    return [];
+
+  }
+
+  @override
+  void dispose() {
+    if (isAnimRunning) {
+      _timer!.cancel();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,10 +221,12 @@ class HistoryPageState extends State<HistoryPage> {
                   ).then((value) {
                     setState(() {
                       if (isConfirmed) {
-                        print("setting the dates to ${TableRangeExampleState.rangeStart} and ${TableRangeExampleState.rangeEnd} ");
                         fromPeriod = TableRangeExampleState.rangeStart;
                         toPeriod = TableRangeExampleState.rangeEnd;
                         currentPlayerTime = TableRangeExampleState.rangeStart!;
+                        DateTime now = DateTime.now();
+                        print("updating from ${fromPeriod ?? now} to ${toPeriod ?? now}");
+                        updateData(fromPeriod ?? now, toPeriod ?? now);
                       }
                     });
                   });
@@ -240,7 +295,8 @@ class HistoryPageState extends State<HistoryPage> {
                         },
                       ).then((value) {
                         setState(() {
-                          updateGraph();
+                          DateTime now = DateTime.now();
+                          updateData(fromPeriod ?? now.subtract(Duration(days: 60)), toPeriod ?? now);
                         });
                       });
                     },
@@ -256,24 +312,59 @@ class HistoryPageState extends State<HistoryPage> {
               ),
             ],
           ),
-          Visibility(
-            visible: (fromPeriod != null && toPeriod != null),
-            child: Row(
-              children: [
-                Slider(
-                  value: currentPlayerTimePercent,
-                  min: 0,
-                  max: 100,
-                  onChanged: (newValue) {
-                    setState(() {
-                      currentPlayerTimePercent = newValue;
-                      int x = ((toPeriod!.millisecondsSinceEpoch - fromPeriod!.millisecondsSinceEpoch) * (currentPlayerTimePercent / 100.0)).toInt();
-                      currentPlayerTime = DateTime.fromMillisecondsSinceEpoch(fromPeriod!.millisecondsSinceEpoch + x);
-                    });
-                  },
-                ),
-                Text("${currentPlayerTime.year}-${currentPlayerTime.month}-${currentPlayerTime.day} ${currentPlayerTime.hour}:${currentPlayerTime.minute}", style: const TextStyle(color: Colors.white)),
-              ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+            child: Visibility(
+              visible: (fromPeriod != null && toPeriod != null),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Slider(
+                        value: currentPlayerTimePercent,
+                        min: 0,
+                        max: 100,
+                        onChanged: (newValue) {
+                          setState(() {
+                            currentPlayerTimePercent = newValue;
+                            int x = ((toPeriod!.millisecondsSinceEpoch - fromPeriod!.millisecondsSinceEpoch) * (currentPlayerTimePercent / 100.0)).toInt();
+                            currentPlayerTime = DateTime.fromMillisecondsSinceEpoch(fromPeriod!.millisecondsSinceEpoch + x);
+                          });
+                        },
+                      ),
+                      Text("${currentPlayerTime.year}-${currentPlayerTime.month}-${currentPlayerTime.day} ${currentPlayerTime.hour}:${currentPlayerTime.minute}", style: const TextStyle(color: Colors.white)),
+                      const SizedBox(width: 10),
+                      SpeedButton(onPress: (speed) {
+                        ;
+                      }),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      TextButton(
+                        child: Icon(Icons.play_arrow, color: isAnimRunning ? Colors.grey : Colors.green),
+                        onPressed: isAnimRunning ? null : () {
+                          setState(() {
+                            _startTimer();
+                            isAnimRunning = true;
+                            print("Starting animation");
+                          });
+                        },
+                      ),
+                      TextButton(
+                        child: Icon(Icons.pause, color: isAnimRunning ? Colors.red : Colors.grey),
+                        onPressed: !isAnimRunning ? null : () {
+                          setState(() {
+                            _timer!.cancel();
+                            isAnimRunning = false;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           AspectRatio(
