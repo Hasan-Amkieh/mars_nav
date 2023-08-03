@@ -8,6 +8,7 @@ class InfluxDBHandle {
 
   bool _isInitted = false;
   late InfluxDBClient _client;
+  late QueryService queryService;
 
   static const bucketId = "84f6a696ed2d0d2d";
   static const orgId = "ee1fbc21f5685216";
@@ -62,6 +63,10 @@ class InfluxDBHandle {
           debug: true
       );
 
+      queryService = _client.getQueryService(queryOptions: QueryOptions(
+          gzip: true
+      ));
+
       // read(DateTime.now().toUtc().subtract(Duration(hours: 3)), DateTime.now().toUtc(), "mem");
 
       // for (int i = 0; i < 1000; i++) {
@@ -115,12 +120,9 @@ class InfluxDBHandle {
       }
     });
 
-    var query = '''from(bucket: "$bucket") |> range(start: ${(from.millisecondsSinceEpoch / 1000).toInt()}, stop: ${(to.millisecondsSinceEpoch / 1000).toInt()}) |> filter(fn: (r) => $measurementPredicate)''';
+    var query = '''from(bucket: "$bucket") |> range(start: ${from.millisecondsSinceEpoch ~/ 1000}, stop: ${to.millisecondsSinceEpoch ~/ 1000}) |> filter(fn: (r) => $measurementPredicate)''';
 
-    print(query);
-    var queryService = _client.getQueryService(queryOptions: QueryOptions(
-      gzip: true
-    ));
+    // print(query);
 
     List<String> recordsFormatted = [];
     var records = await queryService.query(query);
@@ -129,6 +131,27 @@ class InfluxDBHandle {
     });
 
     return recordsFormatted;
+
+  }
+
+  Future<Map<String, int>> countByDays(DateTime from, DateTime to) async {
+
+    String query = """from(bucket: "$bucket")
+    |> range(start: ${from.millisecondsSinceEpoch ~/ 1000}, stop: ${to.millisecondsSinceEpoch ~/ 1000})
+    |> aggregateWindow(every: 1d, fn: count)""";
+
+    final result = await queryService.query(query);
+    Map<String, int> counts = {};
+
+    await result.forEach((record) {
+      if (counts.containsKey(record['_time'])) {
+        counts[record['_time']] = (counts[record['_time']]! + record['_value']).toInt();
+      } else {
+        counts[record['_time']] = record['_value'];
+      }
+    });
+
+    return counts;
 
   }
 

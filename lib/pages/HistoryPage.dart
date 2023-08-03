@@ -213,21 +213,26 @@ class HistoryPageState extends State<HistoryPage> {
                   side: BorderSide(color: Theme.of(context).primaryColor).copyWith(width: 1),
                 ),
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return TableRangeExample();
-                    },
-                  ).then((value) {
-                    setState(() {
-                      if (isConfirmed) {
-                        fromPeriod = TableRangeExampleState.rangeStart;
-                        toPeriod = TableRangeExampleState.rangeEnd;
-                        currentPlayerTime = TableRangeExampleState.rangeStart!;
-                        DateTime now = DateTime.now();
-                        print("updating from ${fromPeriod ?? now} to ${toPeriod ?? now}");
-                        updateData(fromPeriod ?? now, toPeriod ?? now);
-                      }
+                  InfluxDBHandle().countByDays(kFirstDay, kLastDay).then((value) {
+                    value.forEach((key, value) {
+                      TableRangeState.dayCounts[DateTime.parse(key)] = value;
+                    });
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return TableRange();
+                      },
+                    ).then((value) {
+                      setState(() {
+                        if (isConfirmed) {
+                          fromPeriod = TableRangeState.rangeStart;
+                          toPeriod = TableRangeState.rangeEnd;
+                          currentPlayerTime = TableRangeState.rangeStart!;
+                          DateTime now = DateTime.now();
+                          print("updating from ${fromPeriod ?? now} to ${toPeriod ?? now}");
+                          updateData(fromPeriod ?? now, toPeriod ?? now);
+                        }
+                      });
                     });
                   });
                 },
@@ -343,23 +348,22 @@ class HistoryPageState extends State<HistoryPage> {
                   Row(
                     children: [
                       TextButton(
-                        child: Icon(Icons.play_arrow, color: isAnimRunning ? Colors.grey : Colors.green),
                         onPressed: isAnimRunning ? null : () {
                           setState(() {
                             _startTimer();
                             isAnimRunning = true;
-                            print("Starting animation");
                           });
                         },
+                        child: Icon(Icons.play_arrow, color: isAnimRunning ? Colors.grey : Colors.green),
                       ),
                       TextButton(
-                        child: Icon(Icons.pause, color: isAnimRunning ? Colors.red : Colors.grey),
                         onPressed: !isAnimRunning ? null : () {
                           setState(() {
                             _timer!.cancel();
                             isAnimRunning = false;
                           });
                         },
+                        child: Icon(Icons.pause, color: isAnimRunning ? Colors.red : Colors.grey),
                       ),
                     ],
                   ),
@@ -584,12 +588,12 @@ final kToday = DateTime.now();
 final kFirstDay = DateTime(kToday.year - 1, kToday.month, kToday.day);
 final kLastDay = DateTime(kToday.year + 1, kToday.month, kToday.day);
 
-class TableRangeExample extends StatefulWidget {
+class TableRange extends StatefulWidget {
   @override
-  TableRangeExampleState createState() => TableRangeExampleState();
+  TableRangeState createState() => TableRangeState();
 }
 
-class TableRangeExampleState extends State<TableRangeExample> {
+class TableRangeState extends State<TableRange> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode
       .toggledOn; // Can be toggled on/off by longpressing a date
@@ -597,6 +601,7 @@ class TableRangeExampleState extends State<TableRangeExample> {
   DateTime? _selectedDay;
   static DateTime? rangeStart;
   static DateTime? rangeEnd;
+  static Map<DateTime, int> dayCounts = {};
 
   @override
   Widget build(BuildContext context) {
@@ -612,6 +617,22 @@ class TableRangeExampleState extends State<TableRangeExample> {
               firstDay: kFirstDay,
               lastDay: kLastDay,
               focusedDay: _focusedDay,
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  return Column(
+                    children: [
+                      Text(
+                        '${day.day}', // Show the day number
+                        style: const TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                      Text(
+                        '${dayCounts[day] ?? 0} Records', // Show your text here
+                        style: const TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
+                    ],
+                  );
+                },
+              ),
               selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               rangeStartDay: rangeStart,
               rangeEndDay: rangeEnd,
