@@ -3,12 +3,18 @@ import 'package:flutter/material.dart';
 
 import 'package:mars_nav/services/SampleData.dart';
 
-class SamplesPage extends StatelessWidget {
+class SamplesPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return SamplesPageState();
+  }
+}
+
+class SamplesPageState extends State<SamplesPage> {
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Padding(
@@ -17,11 +23,11 @@ class SamplesPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextButton.icon(
-                onPressed: () {
+                onPressed: SampleDataSource.selectedCount == 0 ? null : () {
                   ;
                 },
-                icon: const Icon(Icons.delete_forever_rounded, color: Colors.red),
-                label: const Text("Delete Samples", style: TextStyle(color: Colors.red)),
+                icon: Icon(Icons.delete_forever_rounded, color: SampleDataSource.selectedCount == 0 ? Colors.grey : Colors.red),
+                label: Text("Delete Samples", style: TextStyle(color: SampleDataSource.selectedCount == 0 ? Colors.grey : Colors.red)),
               ),
               IconButton(
                 icon: Icon(Icons.picture_in_picture, color: Theme.of(context).primaryColor),
@@ -32,7 +38,7 @@ class SamplesPage extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(height: 700, child: DataTable2ScrollupDemo()),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.9, child: SampleTable(updateParent: setState)),
       ],
     );
   }
@@ -40,17 +46,19 @@ class SamplesPage extends StatelessWidget {
 }
 
 
-class DataTable2ScrollupDemo extends StatefulWidget {
-  const DataTable2ScrollupDemo({super.key});
+class SampleTable extends StatefulWidget {
+  SampleTable({super.key, required this.updateParent});
+
+  Function updateParent;
 
   @override
-  DataTable2ScrollupDemoState createState() => DataTable2ScrollupDemoState();
+  SampleTableState createState() => SampleTableState();
 }
 
-class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
+class SampleTableState extends State<SampleTable> {
   bool _sortAscending = true;
   int? _sortColumnIndex;
-  late DessertDataSource _dessertsDataSource;
+  late SampleDataSource _samplesDataSource;
   bool _initialized = false;
   final ScrollController _controller = ScrollController();
   final ScrollController _horizontalController = ScrollController();
@@ -59,9 +67,9 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      _dessertsDataSource = DessertDataSource(context);
+      _samplesDataSource = SampleDataSource(context, widget.updateParent);
       _initialized = true;
-      _dessertsDataSource.addListener(() {
+      _samplesDataSource.addListener(() {
         setState(() {});
       });
     }
@@ -72,7 +80,7 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
       int columnIndex,
       bool ascending,
       ) {
-    _dessertsDataSource.sort<T>(getField, ascending);
+    _samplesDataSource.sort<T>(getField, ascending);
     setState(() {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
@@ -81,7 +89,7 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
 
   @override
   void dispose() {
-    _dessertsDataSource.dispose();
+    _samplesDataSource.dispose();
     _controller.dispose();
     _horizontalController.dispose();
     super.dispose();
@@ -90,7 +98,7 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Stack(children: [
           Theme(
             // These makes scroll bars almost always visible. If horizontal scroll bar
@@ -109,7 +117,10 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
                   sortColumnIndex: _sortColumnIndex,
                   sortAscending: _sortAscending,
                   onSelectAll: (val) =>
-                      setState(() => _dessertsDataSource.selectAll(val)),
+                      setState(() {
+                        _samplesDataSource.selectAll(val);
+                        widget.updateParent((){});
+                      }),
                   columns: [
                     DataColumn2(
                       label: const Text('Sample', style: TextStyle(color: Colors.white)),
@@ -120,7 +131,6 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
                     DataColumn2(
                       label: const Text('Time', style: TextStyle(color: Colors.white)),
                       size: ColumnSize.S,
-                      numeric: false,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.time.millisecondsSinceEpoch, columnIndex, ascending),
                     ),
@@ -133,7 +143,6 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
                     DataColumn2(
                       label: const Text('Weight (g)', style: TextStyle(color: Colors.white)),
                       size: ColumnSize.S,
-                      numeric: true,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.weight, columnIndex, ascending),
                     ),
@@ -145,49 +154,43 @@ class DataTable2ScrollupDemoState extends State<DataTable2ScrollupDemo> {
                     ),
                     DataColumn2(
                       label: const Text('Temperature (C°)', style: TextStyle(color: Colors.white)),
-                      size: ColumnSize.S,
-                      numeric: true,
+                      size: ColumnSize.M,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.temperature, columnIndex, ascending),
                     ),
                     DataColumn2(
                       label: const Text('Humidity', style: TextStyle(color: Colors.white)),
                       size: ColumnSize.S,
-                      numeric: true,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.humidity, columnIndex, ascending),
                     ),
                     DataColumn2(
                       label: const Text('pH Level', style: TextStyle(color: Colors.white)),
                       size: ColumnSize.S,
-                      numeric: true,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.pH_level, columnIndex, ascending),
                     ),
                     DataColumn2(
                       label: const Text('EC Level', style: TextStyle(color: Colors.white)),
                       size: ColumnSize.S,
-                      numeric: true,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.EC_level, columnIndex, ascending),
                     ),
                     DataColumn2(
                       label: const Text('NPK Level', style: TextStyle(color: Colors.white)),
                       size: ColumnSize.S,
-                      numeric: true,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.NPK_level, columnIndex, ascending),
                     ),
                     DataColumn2(
                       label: const Text('Sample Status', style: TextStyle(color: Colors.white)),
-                      size: ColumnSize.S,
-                      numeric: true,
+                      size: ColumnSize.M,
                       onSort: (columnIndex, ascending) =>
                           _sort<num>((d) => d.status.index, columnIndex, ascending),
                     ),
                   ],
-                  rows: List<DataRow>.generate(_dessertsDataSource.rowCount,
-                          (index) => _dessertsDataSource.getRow(index)))),
+                  rows: List<DataRow>.generate(_samplesDataSource.rowCount,
+                          (index) => _samplesDataSource.getRow(index)))),
           Positioned(
               bottom: 20,
               right: 0,

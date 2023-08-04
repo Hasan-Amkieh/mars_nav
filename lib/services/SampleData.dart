@@ -3,9 +3,9 @@ import 'package:data_table_2/data_table_2.dart';
 
 
 class RestorableSampleSelections extends RestorableProperty<Set<int>> {
-  Set<int> _dessertSelections = {};
+  Set<int> _sampleSelections = {};
 
-  bool isSelected(int index) => _dessertSelections.contains(index);
+  bool isSelected(int index) => _sampleSelections.contains(index);
 
   void setDessertSelections(List<Sample> desserts) {
     final updatedSet = <int>{};
@@ -15,29 +15,29 @@ class RestorableSampleSelections extends RestorableProperty<Set<int>> {
         updatedSet.add(i);
       }
     }
-    _dessertSelections = updatedSet;
+    _sampleSelections = updatedSet;
     notifyListeners();
   }
 
   @override
-  Set<int> createDefaultValue() => _dessertSelections;
+  Set<int> createDefaultValue() => _sampleSelections;
 
   @override
   Set<int> fromPrimitives(Object? data) {
     final selectedItemIndices = data as List<dynamic>;
-    _dessertSelections = {
+    _sampleSelections = {
       ...selectedItemIndices.map<int>((dynamic id) => id as int),
     };
-    return _dessertSelections;
+    return _sampleSelections;
   }
 
   @override
   void initWithValue(Set<int> value) {
-    _dessertSelections = value;
+    _sampleSelections = value;
   }
 
   @override
-  Object toPrimitives() => _dessertSelections.toList();
+  Object toPrimitives() => _sampleSelections.toList();
 }
 
 int _idCounter = 0;
@@ -78,12 +78,17 @@ class Sample {
   bool selected = false;
 }
 
-class DessertDataSource extends DataTableSource {
-  DessertDataSource.empty(this.context) {
+class SampleDataSource extends DataTableSource {
+  SampleDataSource.empty(this.context, this.updateParent) {
     samples = [];
   }
 
-  DessertDataSource(this.context,
+  Function updateParent;
+
+  static int selectedCount = 0;
+
+  SampleDataSource(this.context,
+      this.updateParent,
       [sortedByCalories = false,
         this.hasRowTaps = false,
         this.hasRowHeightOverrides = false,
@@ -109,16 +114,17 @@ class DessertDataSource extends DataTableSource {
   }
 
   void updateSelectedDesserts(RestorableSampleSelections selectedRows) {
-    _selectedCount = 0;
+    selectedCount = 0;
     for (var i = 0; i < samples.length; i += 1) {
-      var dessert = samples[i];
+      var sample = samples[i];
       if (selectedRows.isSelected(i)) {
-        dessert.selected = true;
-        _selectedCount += 1;
+        sample.selected = true;
+        selectedCount += 1;
       } else {
-        dessert.selected = false;
+        sample.selected = false;
       }
     }
+    updateParent(() {});
     notifyListeners();
   }
 
@@ -137,15 +143,16 @@ class DessertDataSource extends DataTableSource {
           : null),
       onSelectChanged: (value) {
         if (sample.selected != value) {
-          _selectedCount += value! ? 1 : -1;
-          assert(_selectedCount >= 0);
+          selectedCount += value! ? 1 : -1;
+          assert(selectedCount >= 0);
           sample.selected = value;
           notifyListeners();
         }
+        updateParent(() {});
       },
       cells: [
         DataCell(Text(sample.name, style: const TextStyle(color: Colors.white))),
-        DataCell(Text('${sample.time}', style: const TextStyle(color: Colors.white))),
+        DataCell(Text('${sample.time.day}/${sample.time.month}/${sample.time.year} ${sample.time.hour}:${sample.time.minute}', style: const TextStyle(color: Colors.white))),
         DataCell(Text(sample.type.name, style: const TextStyle(color: Colors.white))),
         DataCell(Text('${sample.weight}', style: const TextStyle(color: Colors.white))),
         DataCell(Text(sample.NIR_result, style: const TextStyle(color: Colors.white))),
@@ -166,13 +173,13 @@ class DessertDataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get selectedRowCount => _selectedCount;
+  int get selectedRowCount => selectedCount;
 
   void selectAll(bool? checked) {
     for (final sample in samples) {
       sample.selected = checked ?? false;
     }
-    _selectedCount = (checked ?? false) ? samples.length : 0;
+    selectedCount = (checked ?? false) ? samples.length : 0;
     notifyListeners();
   }
 }
@@ -325,8 +332,6 @@ class DesertsFakeWebService {
     });
   }
 }
-
-int _selectedCount = 0;
 
 List<Sample> _samples = <Sample>[
   Sample(
