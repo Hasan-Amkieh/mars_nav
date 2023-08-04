@@ -693,21 +693,21 @@ class TableRangeState extends State<TableRange> {
                 const SizedBox(width: 10),
                 TextButton(
                   style: ButtonStyle(
-                    side: MaterialStateProperty.all(BorderSide(color: Theme.of(context).primaryColor).copyWith(width: 2)),
+                    side: MaterialStateProperty.all(BorderSide(color: rangeStart == null || rangeEnd == null ? Colors.grey : Theme.of(context).primaryColor).copyWith(width: 2)),
                     backgroundColor: MaterialStateProperty.resolveWith((states) {
                       if (states.isNotEmpty) {
                         if (MaterialState.hovered == states.first) {
                           return Colors.transparent;
                         }
                       }
-                      return Theme.of(context).primaryColor;
+                      return rangeStart == null || rangeEnd == null ? Colors.grey : Theme.of(context).primaryColor;
                     }),
                   ),
-                  child: const Text("Confirm", style: TextStyle(color: Colors.white)),
-                  onPressed: () {
+                  onPressed: rangeStart == null || rangeEnd == null ? null : () {
                     HistoryPageState.isConfirmed = true;
                     Navigator.pop(context);
                   },
+                  child: const Text("Confirm", style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),

@@ -121,6 +121,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  data_table_2:
+    dependency: "direct main"
+    description:
+      name: data_table_2
+      sha256: "3898c424db33437ba2eb8e6bd2e7db3635a19efc0daadfaee427e1949f399b0f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.6"
   equatable:
     dependency: transitive
     description:
@@ -951,4 +959,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.0.3 <4.0.0"
-  flutter: ">=3.7.0"
+  flutter: ">=3.10.0"

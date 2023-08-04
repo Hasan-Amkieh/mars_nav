@@ -144,10 +144,12 @@ class InfluxDBHandle {
     Map<String, int> counts = {};
 
     await result.forEach((record) {
-      if (counts.containsKey(record['_time'])) {
-        counts[record['_time']] = (counts[record['_time']]! + record['_value']).toInt();
-      } else {
-        counts[record['_time']] = record['_value'];
+      if (valueNames.containsKey(record['_measurement'])) {
+        if (counts.containsKey(record['_time'])) {
+          counts[record['_time']] = (counts[record['_time']]! + record['_value']).toInt();
+        } else {
+          counts[record['_time']] = record['_value'];
+        }
       }
     });
 
@@ -156,6 +158,51 @@ class InfluxDBHandle {
   }
 
   void write(DateTime time, String valueName, double value) async {
+
+    final writeApi = _client.getWriteService(WriteOptions(
+      batchSize: 100,
+      flushInterval: 5000, // meaning it will wait for 5 seconds or for the batch size to get to 100 points and then submit
+    ));
+
+    String point = "$valueName value=$value ${time.millisecondsSinceEpoch * 1000000}";
+    print("Writing $point");
+
+    writeApi.write(point).then((value) {
+      print('Write completed 1');
+    }).catchError((exception) {
+      // error block
+      print("Handle write error here!");
+      print(exception);
+    });
+
+  }
+
+  Future<List<String>> readSample(DateTime from, DateTime to, List<String> sensorNames) async {
+
+    String measurementPredicate = "";
+    sensorNames.forEach((element) {
+      if (measurementPredicate.isEmpty) {
+        measurementPredicate = 'r["_measurement"] == "$element"';
+      } else {
+        measurementPredicate += ' or r["_measurement"] == "$element"';
+      }
+    });
+
+    var query = '''from(bucket: "$bucket") |> range(start: ${from.millisecondsSinceEpoch ~/ 1000}, stop: ${to.millisecondsSinceEpoch ~/ 1000}) |> filter(fn: (r) => $measurementPredicate)''';
+
+    // print(query);
+
+    List<String> recordsFormatted = [];
+    var records = await queryService.query(query);
+    await records.forEach((record) {
+      recordsFormatted.add('${record['_time']} | ${record['_measurement']} | ${record['_value']}');
+    });
+
+    return recordsFormatted;
+
+  }
+
+  void writeSample(DateTime time, String valueName, double value) async {
 
     final writeApi = _client.getWriteService(WriteOptions(
       batchSize: 100,

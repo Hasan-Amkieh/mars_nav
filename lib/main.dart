@@ -11,7 +11,7 @@ import 'package:mars_nav/pages/HistoryPage.dart';
 import 'package:mars_nav/pages/ImageryPage.dart';
 import 'package:mars_nav/pages/SamplesPage.dart';
 import 'package:mars_nav/pages/SensoryPage.dart';
-import 'package:mars_nav/pages/SettignsPage.dart';
+import 'package:mars_nav/pages/SettingsPage.dart';
 import 'package:mars_nav/pages/ShellPage.dart';
 import 'package:mars_nav/services/InfluxDBHandle.dart';
 import 'package:mars_nav/widgets/BatteryIcon.dart';

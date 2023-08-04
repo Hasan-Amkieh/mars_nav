@@ -49,6 +49,7 @@ dependencies:
   photo_view: 0.14.0
   table_calendar: 3.0.9
   flutter_window_close: 0.2.2
+  data_table_2: 2.5.6
 
 msix_config:
   display_name: mars_nav
