@@ -73,9 +73,16 @@ class Sample {
   final double pH_level;
   final double EC_level;
   final double NPK_level;
-  final SampleStatus status;
+  SampleStatus status;
+  bool isDeleted = false;
 
   bool selected = false;
+
+  @override
+  String toString() {
+    return '$name\n$time\nweight: $weight g\nType: ${type.name}\nNIR result: $NIR_result\ntemperature: $temperature C\nhumidity: $humidity%\npH level: $pH_level'
+        '\nEC level: $EC_level\nnpk level: $NPK_level\nstatus: ${status.name}';
+  }
 }
 
 class SampleDataSource extends DataTableSource {
@@ -93,7 +100,7 @@ class SampleDataSource extends DataTableSource {
         this.hasRowTaps = false,
         this.hasRowHeightOverrides = false,
         this.hasZebraStripes = false]) {
-    samples = _samples;
+    samples = samples_list;
   }
 
   final BuildContext context;
@@ -152,7 +159,7 @@ class SampleDataSource extends DataTableSource {
       },
       cells: [
         DataCell(Text(sample.name, style: const TextStyle(color: Colors.white))),
-        DataCell(Text('${sample.time.day}/${sample.time.month}/${sample.time.year} ${sample.time.hour}:${sample.time.minute}', style: const TextStyle(color: Colors.white))),
+        DataCell(Text('${sample.time.day}/${sample.time.month}/${sample.time.year} ${sample.time.hour < 10 ? '0' : ''}${sample.time.hour}:${sample.time.minute < 10 ? '0' : ''}${sample.time.minute}', style: const TextStyle(color: Colors.white))),
         DataCell(Text(sample.type.name, style: const TextStyle(color: Colors.white))),
         DataCell(Text('${sample.weight}', style: const TextStyle(color: Colors.white))),
         DataCell(Text(sample.NIR_result, style: const TextStyle(color: Colors.white))),
@@ -333,130 +340,12 @@ class DesertsFakeWebService {
   }
 }
 
-List<Sample> _samples = <Sample>[
-  Sample(
-    name: 'Playground1 Sample',
-    time: DateTime.now(),
-    type: SampleType.rock,
-    weight: 12,
-    NIR_result: "Any",
-    temperature: 15,
-    humidity: 14,
-    pH_level: 10,
-    EC_level: 15,
-    NPK_level: 50,
-    status: SampleStatus.undelivered,
-  ),
-  Sample(
-    name: 'Playground 2 Sample',
-    time: DateTime.now().subtract(Duration(hours: 20)),
-    type: SampleType.debris,
-    weight: 37,
-    NIR_result: "Any",
-    temperature: 129,
-    humidity: 8,
-    pH_level: 1,
-    EC_level: 16,
-    NPK_level: 5,
-    status: SampleStatus.delivered,
-  ),
-  Sample(
-    name: 'Eclair',
-    time: DateTime.now().subtract(Duration(hours: 40)),
-    type: SampleType.rock,
-    weight: 24,
-    NIR_result: "Any",
-    temperature: 337,
-    humidity: 6,
-    pH_level: 7,
-    EC_level: 10,
-    NPK_level: 550,
-    status: SampleStatus.undelivered,
-  ),
-  Sample(
-    name: 'Cupcake',
-    time: DateTime.now().subtract(Duration(days: 20)),
-    type: SampleType.rock,
-    weight: 67,
-    NIR_result: "Any",
-    temperature: 413,
-    humidity: 3,
-    pH_level: 8,
-    EC_level: 69,
-    NPK_level: 70,
-    status: SampleStatus.undelivered,
-  ),
-  Sample(
-    name: 'Gingerbread',
-    time: DateTime.now(),
-    type: SampleType.debris,
-    weight: 49,
-    NIR_result: "Any",
-    temperature: 327,
-    humidity: 7,
-    pH_level: 16,
-    EC_level: 20,
-    NPK_level: 10,
-    status: SampleStatus.delivered,
-  ),
-  Sample(
-    name: 'Jelly Bean',
-    time: DateTime.now(),
-    type: SampleType.debris,
-    weight: 94,
-    NIR_result: "Any",
-    temperature: 50,
-    humidity: 0,
-    pH_level: 0,
-    EC_level: 105,
-    NPK_level: 2,
-    status: SampleStatus.delivered,
-  ),
-  Sample(
-    name: 'Lollipop',
-    time: DateTime.now(),
-    type: SampleType.debris,
-    weight: 98,
-    NIR_result: "Any",
-    temperature: 38,
-    humidity: 0,
-    pH_level: 2,
-    EC_level: 195,
-    NPK_level: 59,
-    status: SampleStatus.delivered,
-  ),
-  Sample(
-    name: 'Honeycomb',
-    time: DateTime.now(),
-    type: SampleType.rock,
-    weight: 87,
-    NIR_result: "Any",
-    temperature: 562,
-    humidity: 0,
-    pH_level: 45,
-    EC_level: 1,
-    NPK_level: 47,
-    status: SampleStatus.delivered,
-  ),
-  Sample(
-    name: 'Donut',
-    time: DateTime.now(),
-    type: SampleType.rock,
-    weight: 51,
-    NIR_result: "Any",
-    temperature: 326,
-    humidity: 2,
-    pH_level: 22,
-    EC_level: 5,
-    NPK_level: 50,
-    status: SampleStatus.undelivered,
-  ),
-];
+List<Sample> samples_list = [];
 
-List<Sample> _dessertsX3 = _samples.toList()
-  ..addAll(_samples.map((i) => Sample(name: '${i.name} x2', type: i.type, time: i.time,
+List<Sample> _dessertsX3 = samples_list.toList()
+  ..addAll(samples_list.map((i) => Sample(name: '${i.name} x2', type: i.type, time: i.time,
       weight: i.weight, humidity: i.humidity, temperature: i.temperature,
       pH_level: i.pH_level, NPK_level: i.NPK_level, EC_level: i.EC_level, NIR_result: i.NIR_result, status: i.status)))
-  ..addAll(_samples.map((i) => Sample(name: '${i.name} x3', type: i.type, time: i.time,
+  ..addAll(samples_list.map((i) => Sample(name: '${i.name} x3', type: i.type, time: i.time,
       weight: i.weight, humidity: i.humidity, temperature: i.temperature,
       pH_level: i.pH_level, NPK_level: i.NPK_level, EC_level: i.EC_level, NIR_result: i.NIR_result, status: i.status)));

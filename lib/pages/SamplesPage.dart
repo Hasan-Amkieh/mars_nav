@@ -1,5 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:mars_nav/services/InfluxDBHandle.dart';
 
 import 'package:mars_nav/services/SampleData.dart';
 
@@ -62,6 +63,19 @@ class SampleTableState extends State<SampleTable> {
   bool _initialized = false;
   final ScrollController _controller = ScrollController();
   final ScrollController _horizontalController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    InfluxDBHandle().readAllSamples().then((samples) {
+      print("Received the samples of size ${samples.length}");
+      setState(() {
+        _samplesDataSource.samples = samples;
+        samples_list = samples;
+      });
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -219,6 +233,7 @@ class _ScrollXYButtonState extends State<_ScrollXYButton> {
   @override
   void initState() {
     super.initState();
+
     widget.controller.addListener(() {
       if (widget.controller.position.pixels > 20 && !_showScrollXY) {
         setState(() {
@@ -229,13 +244,6 @@ class _ScrollXYButtonState extends State<_ScrollXYButton> {
           _showScrollXY = false;
         });
       }
-      // On GitHub there was a question on how to determine the event
-      // of widget being scrolled to the bottom. Here's the sample
-      // if (widget.controller.position.hasViewportDimension &&
-      //     widget.controller.position.pixels >=
-      //         widget.controller.position.maxScrollExtent - 0.01) {
-      //   print('Scrolled to bottom');
-      //}
     });
   }
 

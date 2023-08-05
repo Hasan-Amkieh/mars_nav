@@ -396,7 +396,7 @@ class SensoryPageState extends State<SensoryPage> {
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          AngleGauge(angle: Main.xAngle, color: const Color(0xFF00E676), thickness: 10, height: 220),
+                          AngleGauge(angle: Main.xAngle, color: const Color(0xFF00E676), thickness: 10, height: 200),
                           Text("X-Axis ${Main.xAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
                         ],
                       ),
@@ -404,7 +404,7 @@ class SensoryPageState extends State<SensoryPage> {
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 220),
+                          AngleGauge(angle: Main.yAngle, color: const Color(0xFFFFD54F), thickness: 10, height: 200),
                           Text("Y-Axis ${Main.yAngle}", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12)),
                         ],
                       ),
