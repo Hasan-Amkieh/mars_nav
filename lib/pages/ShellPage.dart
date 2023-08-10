@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 import "package:flutter_console_widget/flutter_console.dart";
+import "package:mars_nav/main.dart";
 
 class ShellPage extends StatefulWidget {
 
@@ -42,6 +43,7 @@ class ShellPageState extends State<ShellPage> {
   int _counter = 0;
 
   String newName = "";
+  bool isTabAdded = false;
 
   void _updateTabs(context) {
     _counter = 0;
@@ -57,14 +59,17 @@ class ShellPageState extends State<ShellPage> {
                  builder: (BuildContext context) {
                    TextEditingController _nameController = TextEditingController();
                    return AlertDialog(
+                     backgroundColor: Main.scaffoldBackgroundColor,
                      title: const Text('Enter Console Name', style: TextStyle(color: Colors.white)),
                      content: TextField(
                        controller: _nameController,
-                       decoration: InputDecoration(labelText: 'Name'),
+                       style: TextStyle(color: Colors.white),
+                       decoration: InputDecoration(labelText: 'Name', labelStyle: TextStyle(color: Colors.white), floatingLabelStyle: TextStyle(color: Theme.of(context).primaryColor)),
                      ),
                      actions: [
                        ElevatedButton(
                          onPressed: () {
+                           isTabAdded = false;
                            Navigator.of(context).pop(); // Close the dialog
                          },
                          child: const Text('Cancel'),
@@ -72,7 +77,8 @@ class ShellPageState extends State<ShellPage> {
                        ElevatedButton(
                          onPressed: () {
                            newName = _nameController.text;
-                           Navigator.of(context).pop(); // Close the dialog
+                           isTabAdded = true;
+                           Navigator.of(context).pop();
                          },
                          child: const Text('OK'),
                        ),
@@ -81,8 +87,10 @@ class ShellPageState extends State<ShellPage> {
                  },
              ).then((name) {
                setState(() {
-                 controllers.add(Console(controller: FlutterConsoleController(), name: newName));
-                 tabs.add(FlutterConsole(controller: controllers.last.controller, height: widget.height, width: widget.width));
+                 if (isTabAdded && newName.isNotEmpty) {
+                   controllers.add(Console(controller: FlutterConsoleController(), name: newName));
+                   tabs.add(FlutterConsole(controller: controllers.last.controller, height: widget.height, width: widget.width));
+                 }
                });
              });
              ;
