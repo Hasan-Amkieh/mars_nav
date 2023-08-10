@@ -58,7 +58,7 @@ class Sample {
   Sample({required this.name, required this.time, required this.type,
     required this.weight, required this.NIR_result, required this.temperature,
     required this.humidity, required this.pH_level, required this.EC_level,
-    required this.NPK_level, required this.status,
+    required this.NPK_level, required this.status
   });
 
   final int id = _idCounter++;
@@ -74,9 +74,15 @@ class Sample {
   final double EC_level;
   final double NPK_level;
   SampleStatus status;
-  bool isDeleted = false;
 
   bool selected = false;
+
+  bool isEqual(Sample sample) {
+    return sample.name == name && sample.time.toUtc() == time.toUtc() && sample.type == type &&
+        sample.weight == weight && sample.NIR_result == NIR_result && sample.temperature == temperature &&
+        sample.humidity == humidity && sample.pH_level == pH_level && sample.EC_level == EC_level &&
+        sample.NPK_level == NPK_level && sample.status == status;
+  }
 
   @override
   String toString() {

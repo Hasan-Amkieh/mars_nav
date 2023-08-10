@@ -87,6 +87,7 @@ class HistoryPageState extends State<HistoryPage> {
 
   @override
   void initState() {
+
     InfluxDBHandle.valueNames.values.forEach((element) {
       bool isSel = false;
       if (element == "CPU Util" || element == "GPU Util" || element == "Used RAM") {
@@ -108,8 +109,9 @@ class HistoryPageState extends State<HistoryPage> {
     List<String> transLabels = labels.map((e) {
       return InfluxDBHandle.valueNames.keys.firstWhere((k) => InfluxDBHandle.valueNames[k] == e, orElse: () => "");
     }).toList();
-    print("tranlated table: $transLabels");
-    InfluxDBHandle().read(from, to, transLabels).then((value) {
+    print("translated table: $transLabels");
+    InfluxDBHandle().read(from, to, transLabels).then((value) async {
+      print("value is $value");
       value.forEach((element) {
         List<String> parts = element.split(" | ");
         if (!data.containsKey(parts[1])) {
@@ -117,7 +119,6 @@ class HistoryPageState extends State<HistoryPage> {
         }
         data[parts[1]]?.add(TimeData(DateTime.parse(parts[0]), double.parse(parts[2])));
       });
-
       setState(() {
         updateGraph();
       });
@@ -301,7 +302,7 @@ class HistoryPageState extends State<HistoryPage> {
                       ).then((value) {
                         setState(() {
                           DateTime now = DateTime.now();
-                          updateData(fromPeriod ?? now.subtract(Duration(days: 60)), toPeriod ?? now);
+                          updateData(fromPeriod ?? now.subtract(const Duration(days: 60)), toPeriod ?? now);
                         });
                       });
                     },
@@ -564,13 +565,7 @@ final kEvents = LinkedHashMap<DateTime, List<Event>>(
 final _kEventSource = Map.fromIterable(List.generate(50, (index) => index),
     key: (item) => DateTime.utc(kFirstDay.year, kFirstDay.month, item * 5),
     value: (item) => List.generate(
-        item % 4 + 1, (index) => Event('Event $item | ${index + 1}')))
-  ..addAll({
-    kToday: [
-      Event('Today\'s Event 1'),
-      Event('Today\'s Event 2'),
-    ],
-  });
+        item % 4 + 1, (index) => Event('Event $item | ${index + 1}')));
 
 int getHashCode(DateTime key) {
   return key.day * 1000000 + key.month * 10000 + key.year;

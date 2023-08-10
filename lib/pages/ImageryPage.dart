@@ -263,7 +263,6 @@ class ImageryPageState extends State {
                         ],
                       ),
                     ),
-
                     const Center(child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

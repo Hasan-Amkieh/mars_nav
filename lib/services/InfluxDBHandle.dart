@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:influxdb_client/api.dart';
 
+import '../main.dart';
 import 'SampleData.dart';
 
 class InfluxDBHandle {
@@ -10,7 +12,7 @@ class InfluxDBHandle {
 
   bool _isInitted = false;
   late InfluxDBClient _client;
-  late QueryService queryService;
+  late QueryService _queryService;
 
   static const bucketId = "84f6a696ed2d0d2d";
   static const orgId = "ee1fbc21f5685216";
@@ -65,132 +67,9 @@ class InfluxDBHandle {
           debug: true
       );
 
-      queryService = _client.getQueryService(queryOptions: QueryOptions(
+      _queryService = _client.getQueryService(queryOptions: QueryOptions(
           gzip: true
       ));
-
-      // List<Sample> samples = <Sample>[
-      //   Sample(
-      //     name: 'Playground1 Sample',
-      //     time: DateTime.now().subtract(Duration(minutes: 30)),
-      //     type: SampleType.rock,
-      //     weight: 12,
-      //     NIR_result: "Any",
-      //     temperature: 15,
-      //     humidity: 14,
-      //     pH_level: 10,
-      //     EC_level: 15,
-      //     NPK_level: 50,
-      //     status: SampleStatus.undelivered,
-      //   ),
-      //   Sample(
-      //     name: 'Playground 2 Sample',
-      //     time: DateTime.now().subtract(Duration(hours: 20)),
-      //     type: SampleType.debris,
-      //     weight: 37,
-      //     NIR_result: "Any",
-      //     temperature: 129,
-      //     humidity: 8,
-      //     pH_level: 1,
-      //     EC_level: 16,
-      //     NPK_level: 5,
-      //     status: SampleStatus.delivered,
-      //   ),
-      //   Sample(
-      //     name: 'Eclair',
-      //     time: DateTime.now().subtract(Duration(hours: 40)),
-      //     type: SampleType.rock,
-      //     weight: 24,
-      //     NIR_result: "Any",
-      //     temperature: 337,
-      //     humidity: 6,
-      //     pH_level: 7,
-      //     EC_level: 10,
-      //     NPK_level: 550,
-      //     status: SampleStatus.undelivered,
-      //   ),
-      //   Sample(
-      //     name: 'Cupcake',
-      //     time: DateTime.now().subtract(Duration(days: 20)),
-      //     type: SampleType.rock,
-      //     weight: 67,
-      //     NIR_result: "Any",
-      //     temperature: 413,
-      //     humidity: 3,
-      //     pH_level: 8,
-      //     EC_level: 69,
-      //     NPK_level: 70,
-      //     status: SampleStatus.undelivered,
-      //   ),
-      //   Sample(
-      //     name: 'Gingerbread',
-      //     time: DateTime.now().subtract(Duration(minutes: 10)),
-      //     type: SampleType.debris,
-      //     weight: 49,
-      //     NIR_result: "Any",
-      //     temperature: 327,
-      //     humidity: 7,
-      //     pH_level: 16,
-      //     EC_level: 20,
-      //     NPK_level: 10,
-      //     status: SampleStatus.delivered,
-      //   ),
-      //   Sample(
-      //     name: 'Jelly Bean',
-      //     time: DateTime.now().subtract(Duration(minutes: 5)),
-      //     type: SampleType.debris,
-      //     weight: 94,
-      //     NIR_result: "Any",
-      //     temperature: 50,
-      //     humidity: 0,
-      //     pH_level: 0,
-      //     EC_level: 105,
-      //     NPK_level: 2,
-      //     status: SampleStatus.delivered,
-      //   ),
-      //   Sample(
-      //     name: 'Lollipop',
-      //     time: DateTime.now().subtract(Duration(minutes: 1)),
-      //     type: SampleType.debris,
-      //     weight: 98,
-      //     NIR_result: "Any",
-      //     temperature: 38,
-      //     humidity: 0,
-      //     pH_level: 2,
-      //     EC_level: 195,
-      //     NPK_level: 59,
-      //     status: SampleStatus.delivered,
-      //   ),
-      //   Sample(
-      //     name: 'Honeycomb',
-      //     time: DateTime.now().subtract(Duration(minutes: 3000)),
-      //     type: SampleType.rock,
-      //     weight: 87,
-      //     NIR_result: "Any",
-      //     temperature: 562,
-      //     humidity: 0,
-      //     pH_level: 45,
-      //     EC_level: 1,
-      //     NPK_level: 47,
-      //     status: SampleStatus.delivered,
-      //   ),
-      //   Sample(
-      //     name: 'Donut',
-      //     time: DateTime.now().subtract(Duration(minutes: 1000)),
-      //     type: SampleType.rock,
-      //     weight: 51,
-      //     NIR_result: "Any",
-      //     temperature: 326,
-      //     humidity: 2,
-      //     pH_level: 22,
-      //     EC_level: 5,
-      //     NPK_level: 50,
-      //     status: SampleStatus.undelivered,
-      //   ),
-      // ];
-      // samples.forEach((sample) {
-      //   writeSample(sample);
-      // });
 
       // for (int i = 0; i < 1000; i++) {
       //   DateTime randomDateTime = generateRandomDateTime();
@@ -248,7 +127,7 @@ class InfluxDBHandle {
     // print(query);
 
     List<String> recordsFormatted = [];
-    var records = await queryService.query(query);
+    var records = await _queryService.query(query);
     await records.forEach((record) {
       recordsFormatted.add('${record['_time']} | ${record['_measurement']} | ${record['_value']}');
     });
@@ -263,7 +142,7 @@ class InfluxDBHandle {
     |> range(start: ${from.millisecondsSinceEpoch ~/ 1000}, stop: ${to.millisecondsSinceEpoch ~/ 1000})
     |> aggregateWindow(every: 1d, fn: count)""";
 
-    final result = await queryService.query(query);
+    final result = await _queryService.query(query);
     Map<String, int> counts = {};
 
     await result.forEach((record) {
@@ -302,57 +181,52 @@ class InfluxDBHandle {
 
   Future<List<Sample>> readAllSamples() async {
 
-    String measurementPredicate = 'r["_measurement"] == "sample"';
-
-    var query = '''from(bucket: "$bucket") |> range(start: 0) |> filter(fn: (r) => $measurementPredicate)''';
-    // print(query);
-
     List<Sample> samples = [];
-    var records = await queryService.query(query);
-    await records.forEach((record) {
-      if (record['deleted'] == 'false') {
-        samples.add(Sample(name: _unescapeTagValue(record['name']), time: DateTime.parse(record['_time']), type: record['type'] == SampleType.rock.name ? SampleType.rock : SampleType.debris,
-            status: record['status'] == SampleStatus.delivered.name ? SampleStatus.delivered : SampleStatus.undelivered, NIR_result: _unescapeTagValue(record["nir_result"]),
-            EC_level: record["ec_level"], NPK_level: record['npk_level'], pH_level: record['ph_level'], weight: record['weight'], humidity: record['humidity'],
-            temperature: record['temperature']));
-      }
-    });
-    // print(samples);
+    List<String> contents = [];
+
+    final File sampleFile = File(Main.appDir + r"\mars_nav\samples.txt");
+    if (sampleFile.existsSync()) {
+      ((await sampleFile.readAsString()).split("\r\n*-*-*\r\n")).forEach((line) {
+        // print("Line is $line");
+        contents = line.split(',');
+        samples.add(Sample(name: contents[0], time: DateTime.fromMillisecondsSinceEpoch(int.parse(contents[1])),
+            type: SampleType.rock.name == contents[2] ? SampleType.rock : SampleType.debris, weight: double.parse(contents[3]),
+            NIR_result: contents[4], temperature: double.parse(contents[5]), humidity: double.parse(contents[6]),
+            pH_level: double.parse(contents[7]), EC_level: double.parse(contents[8]), NPK_level: double.parse(contents[9]),
+            status: SampleStatus.delivered.name == contents[10] ? SampleStatus.delivered : SampleStatus.undelivered));
+      });
+    } else {
+      sampleFile.createSync();
+    }
 
     return samples;
 
   }
 
-  void writeSample(Sample sample) async {
+  void writeAllSamples(List<Sample> samples) {
 
-    final writeApi = _client.getWriteService(WriteOptions(
-      batchSize: 100,
-      flushInterval: 5000, // meaning it will wait for 5 seconds or for the batch size to get to 100 points and then submit
-    ));
+    String toWrite = "";
+    const separator = "\r\n*-*-*\r\n"; // 9 characters
 
-    String point = "sample,name=${_escapeTagValue(sample.name)},type=${sample.type.name},"
-        "weight=${sample.weight},nir_result=${_escapeTagValue(sample.NIR_result)},ph_level=${sample.pH_level},"
-        "npk_level=${sample.NPK_level},deleted=${sample.isDeleted},ec_level=${sample.EC_level},"
-        "temperature=${sample.temperature},humidity=${sample.humidity},status=${sample.status.name} "
-        "value=0.0 ${sample.time.toUtc().millisecondsSinceEpoch * 1000000}";
-    // print("Writing Sample: $point");
+    for (int i = 0 ; i < samples.length ; i++) {
+      if ((i+1) == samples.length) {
+        toWrite += "${samples[i].name},${samples[i].time.millisecondsSinceEpoch},${samples[i].type.name},${samples[i].weight},"
+            "${samples[i].NIR_result},${samples[i].temperature},${samples[i].humidity},${samples[i].pH_level},${samples[i].EC_level},"
+            "${samples[i].NPK_level},${samples[i].status.name}";
+        break;
+      } else {
+        toWrite += "${samples[i].name},${samples[i].time.millisecondsSinceEpoch},${samples[i].type.name},${samples[i].weight},"
+            "${samples[i].NIR_result},${samples[i].temperature},${samples[i].humidity},${samples[i].pH_level},${samples[i].EC_level},"
+            "${samples[i].NPK_level},${samples[i].status.name} $separator";
+      }
+    }
 
-    writeApi.write(point).then((value) {
-      print('Write completed');
-    }).catchError((exception) {
-      // error block
-      print("Handle write error here!");
-      print(exception);
-    });
+    final File sampleFile = File(Main.appDir + r"\mars_nav\samples.txt");
+    if (!sampleFile.existsSync()) {
+      sampleFile.createSync();
+    }
+    sampleFile.writeAsStringSync(toWrite, flush: true);
 
-  }
-
-  String _escapeTagValue(String value) {
-    return value.replaceAll(' ', r'\\$1');
-  }
-
-  String _unescapeTagValue(String escapedValue) {
-    return escapedValue.replaceAll(r'\\$1', ' ');
   }
 
   static final InfluxDBHandle _instance = InfluxDBHandle._();

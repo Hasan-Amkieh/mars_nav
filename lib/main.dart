@@ -23,7 +23,6 @@ import 'package:ffi/ffi.dart';
 
 import 'dart:math' as math;
 
-
 enum RoverState {
   offline("OFFLINE", Colors.blueGrey), standard("STANDARD MODE", Colors.green), autonomous("AUTONOMOUS MODE", Colors.yellow), halt("HALTED", Colors.red);
   const RoverState(this.description, this.color);
@@ -512,7 +511,7 @@ class MainNavigator extends StatelessWidget {
             case 3:
               return CommandsPage();
             case 4:
-              return ShellPage();
+              return ShellPage(width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height);
             case 5:
               return SettingsPage();
             default:
@@ -534,7 +533,7 @@ class MainNavigator extends StatelessWidget {
             case 4:
               return CommandsPage();
             case 5:
-              return ShellPage();
+              return ShellPage(width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height);
             case 6:
               return SettingsPage();
             default:

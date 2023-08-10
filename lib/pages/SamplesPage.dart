@@ -24,8 +24,22 @@ class SamplesPageState extends State<SamplesPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextButton.icon(
+                style: ButtonStyle(
+                  overlayColor: MaterialStateProperty.all(Colors.red.withOpacity(0.2)),
+                ),
                 onPressed: SampleDataSource.selectedCount == 0 ? null : () {
-                  ;
+                  List<Sample> toDelete = [];
+                  SampleTableState.samplesDataSource.samples.forEach((element) {
+                    if (element.selected) {
+                      toDelete.add(element);
+                    }
+                  });
+                  setState(() {
+                    toDelete.forEach((element) async {
+                      SampleTableState.samplesDataSource.samples.remove(element);
+                      InfluxDBHandle().writeAllSamples(SampleTableState.samplesDataSource.samples);
+                    });
+                  });
                 },
                 icon: Icon(Icons.delete_forever_rounded, color: SampleDataSource.selectedCount == 0 ? Colors.grey : Colors.red),
                 label: Text("Delete Samples", style: TextStyle(color: SampleDataSource.selectedCount == 0 ? Colors.grey : Colors.red)),
@@ -59,7 +73,7 @@ class SampleTable extends StatefulWidget {
 class SampleTableState extends State<SampleTable> {
   bool _sortAscending = true;
   int? _sortColumnIndex;
-  late SampleDataSource _samplesDataSource;
+  static late SampleDataSource samplesDataSource;
   bool _initialized = false;
   final ScrollController _controller = ScrollController();
   final ScrollController _horizontalController = ScrollController();
@@ -68,10 +82,36 @@ class SampleTableState extends State<SampleTable> {
   void initState() {
     super.initState();
 
-    InfluxDBHandle().readAllSamples().then((samples) {
-      print("Received the samples of size ${samples.length}");
+    // InfluxDBHandle().writeAllSamples([Sample(
+    //       name: 'Playground1 Sample',
+    //       time: DateTime.now().subtract(Duration(minutes: 30)),
+    //       type: SampleType.rock,
+    //       weight: 12,
+    //       NIR_result: "Any",
+    //       temperature: 15,
+    //       humidity: 14,
+    //       pH_level: 10,
+    //       EC_level: 15,
+    //       NPK_level: 50,
+    //       status: SampleStatus.undelivered,
+    //     ),
+    //     Sample(
+    //       name: 'Playground 2 Sample',
+    //       time: DateTime.now().subtract(Duration(hours: 20)),
+    //       type: SampleType.debris,
+    //       weight: 37,
+    //       NIR_result: "Any",
+    //       temperature: 129,
+    //       humidity: 8,
+    //       pH_level: 1,
+    //       EC_level: 16,
+    //       NPK_level: 5,
+    //       status: SampleStatus.delivered,
+    //     )]);
+
+    InfluxDBHandle().readAllSamples().then((List<Sample> samples) {
       setState(() {
-        _samplesDataSource.samples = samples;
+        samplesDataSource.samples = samples;
         samples_list = samples;
       });
     });
@@ -81,9 +121,9 @@ class SampleTableState extends State<SampleTable> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      _samplesDataSource = SampleDataSource(context, widget.updateParent);
+      samplesDataSource = SampleDataSource(context, widget.updateParent);
       _initialized = true;
-      _samplesDataSource.addListener(() {
+      samplesDataSource.addListener(() {
         setState(() {});
       });
     }
@@ -94,7 +134,7 @@ class SampleTableState extends State<SampleTable> {
       int columnIndex,
       bool ascending,
       ) {
-    _samplesDataSource.sort<T>(getField, ascending);
+    samplesDataSource.sort<T>(getField, ascending);
     setState(() {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
@@ -103,7 +143,7 @@ class SampleTableState extends State<SampleTable> {
 
   @override
   void dispose() {
-    _samplesDataSource.dispose();
+    samplesDataSource.dispose();
     _controller.dispose();
     _horizontalController.dispose();
     super.dispose();
@@ -132,7 +172,7 @@ class SampleTableState extends State<SampleTable> {
                   sortAscending: _sortAscending,
                   onSelectAll: (val) =>
                       setState(() {
-                        _samplesDataSource.selectAll(val);
+                        samplesDataSource.selectAll(val);
                         widget.updateParent((){});
                       }),
                   columns: [
@@ -203,8 +243,8 @@ class SampleTableState extends State<SampleTable> {
                           _sort<num>((d) => d.status.index, columnIndex, ascending),
                     ),
                   ],
-                  rows: List<DataRow>.generate(_samplesDataSource.rowCount,
-                          (index) => _samplesDataSource.getRow(index)))),
+                  rows: List<DataRow>.generate(samplesDataSource.rowCount,
+                          (index) => samplesDataSource.getRow(index)))),
           Positioned(
               bottom: 20,
               right: 0,
