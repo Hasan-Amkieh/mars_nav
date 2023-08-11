@@ -52,6 +52,7 @@ dependencies:
   data_table_2: 2.5.6
   flutter_console_widget: 0.0.3
   timelines: 0.1.0
+  oktoast: 3.3.1
 
 msix_config:
   display_name: mars_nav

@@ -111,7 +111,6 @@ class HistoryPageState extends State<HistoryPage> {
     }).toList();
     print("translated table: $transLabels");
     InfluxDBHandle().read(from, to, transLabels).then((value) async {
-      print("value is $value");
       value.forEach((element) {
         List<String> parts = element.split(" | ");
         if (!data.containsKey(parts[1])) {

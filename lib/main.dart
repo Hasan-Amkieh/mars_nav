@@ -16,6 +16,7 @@ import 'package:mars_nav/pages/ShellPage.dart';
 import 'package:mars_nav/services/InfluxDBHandle.dart';
 import 'package:mars_nav/widgets/BatteryIcon.dart';
 import 'package:mars_nav/widgets/VideoPlayer.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:shimmer/shimmer.dart';
@@ -226,56 +227,58 @@ class Home extends StatelessWidget {
       });
     }
 
-    return MaterialApp(
-      title: 'Mars Nav',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Main.primaryColor,
-        canvasColor: Main.canvasColor,
-        scaffoldBackgroundColor: Main.scaffoldBackgroundColor,
-        textTheme: const TextTheme(
-          headlineSmall: TextStyle(
-            color: Colors.white,
-            fontSize: 46,
-            fontWeight: FontWeight.w800,
+    return OKToast(
+      child: MaterialApp(
+        title: 'Mars Nav',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: Main.primaryColor,
+          canvasColor: Main.canvasColor,
+          scaffoldBackgroundColor: Main.scaffoldBackgroundColor,
+          textTheme: const TextTheme(
+            headlineSmall: TextStyle(
+              color: Colors.white,
+              fontSize: 46,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
-      ),
-      home: Builder(
-        builder: (context) {
-          final isSmallScreen = MediaQuery.of(context).size.width < 600;
-          if (Main.widgetToDisplay != null) {
-            return Scaffold(
-              key: key_,
-              body: Center(
-                child: Main.widgetToDisplay,
-              ),
-            );
-          } else {
-            return Scaffold(
-              key: key_,
-              appBar: isSmallScreen
-                  ? AppBar(
-                backgroundColor: Main.canvasColor,
-                title: Text(Main.pageIndexToName[controller_.selectedIndex]),
-              )
-                  : null,
-              drawer: CustomSidebarX(controller: controller_),
-              body: Row(
-                children: [
-                  if (!isSmallScreen) CustomSidebarX(controller: controller_),
-                  Expanded(
-                    child: Center(
-                      child: MainNavigator(
-                        controller: controller_,
+        home: Builder(
+          builder: (context) {
+            final isSmallScreen = MediaQuery.of(context).size.width < 600;
+            if (Main.widgetToDisplay != null) {
+              return Scaffold(
+                key: key_,
+                body: Center(
+                  child: Main.widgetToDisplay,
+                ),
+              );
+            } else {
+              return Scaffold(
+                key: key_,
+                appBar: isSmallScreen
+                    ? AppBar(
+                  backgroundColor: Main.canvasColor,
+                  title: Text(Main.pageIndexToName[controller_.selectedIndex]),
+                )
+                    : null,
+                drawer: CustomSidebarX(controller: controller_),
+                body: Row(
+                  children: [
+                    if (!isSmallScreen) CustomSidebarX(controller: controller_),
+                    Expanded(
+                      child: Center(
+                        child: MainNavigator(
+                          controller: controller_,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-        },
+                  ],
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }

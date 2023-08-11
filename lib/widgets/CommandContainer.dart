@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class CommandContainer extends StatelessWidget {
 
-  final Widget content;
+  final List<Widget> contents;
   final Widget iconWidget;
   final Widget titleWidget;
   final Widget? detailsWidget;
   final double width;
   final double height;
 
-  CommandContainer({required this.iconWidget, required this.titleWidget, required this.content, required this.detailsWidget, required this.width, required this.height});
+  CommandContainer({required this.iconWidget, required this.titleWidget, required this.contents, required this.detailsWidget, required this.width, required this.height});
 
 
   @override
@@ -38,7 +38,8 @@ class CommandContainer extends StatelessWidget {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -53,7 +54,7 @@ class CommandContainer extends StatelessWidget {
               detailsWidget ?? const SizedBox(width: 0, height: 0),
             ],
           ),
-          content,
+          ...contents,
         ],
       ),
     );
