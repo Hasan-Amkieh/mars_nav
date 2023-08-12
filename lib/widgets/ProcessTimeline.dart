@@ -83,7 +83,9 @@ const inProgressColor = Color(0xff5ec792);
 const todoColor = Color(0xffd1d2d7);
 
 class ProcessTimelinePage extends StatefulWidget {
-  ProcessTimelinePage({required this.commands});
+  ProcessTimelinePage({required this.commands, required this.processIndex});
+
+  int processIndex;
 
   List<Command> commands;
 
@@ -92,12 +94,11 @@ class ProcessTimelinePage extends StatefulWidget {
 }
 
 class ProcessTimelinePageState extends State<ProcessTimelinePage> {
-  int _processIndex = 2;
 
   Color getColor(int index) {
-    if (index == _processIndex) {
+    if (index == widget.processIndex) {
       return inProgressColor;
-    } else if (index < _processIndex) {
+    } else if (index < widget.processIndex) {
       return completeColor;
     } else {
       return todoColor;
@@ -109,7 +110,7 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
     return Timeline.tileBuilder(
       theme: TimelineThemeData(
         direction: Axis.horizontal,
-        connectorTheme: ConnectorThemeData(
+        connectorTheme: const ConnectorThemeData(
           space: 30.0,
           thickness: 5.0,
         ),
@@ -136,20 +137,24 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
                     color: getColor(index),
                   ),
                 ),
-                Text(
-                  widget.commands[index].getDescription(),
-                  style: TextStyle(
-                    color: getColor(index),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      widget.commands[index].getDescription(),
+                      style: TextStyle(
+                        color: getColor(index),
+                      ),
+                    ),
                   ),
                 ),
                 Visibility(
-                  visible: index >= _processIndex,
+                  visible: index >= widget.processIndex,
                   child: TextButton(
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.red.withOpacity(0.2)),
                     ),
-                    child: Icon(Icons.cancel_schedule_send_outlined, color: Colors.red, size: Main.iconSize * 0.8),
                     onPressed: widget.commands[index].onDeleted,
+                    child: const Icon(Icons.cancel_schedule_send_outlined, color: Colors.red, size: Main.iconSize * 0.8),
                   ),
                 ),
               ],
@@ -159,18 +164,18 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
         indicatorBuilder: (_, index) {
           var color;
           var child;
-          if (index == _processIndex) {
+          if (index == widget.processIndex) {
             color = inProgressColor;
-            child = Padding(
+            child = const Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircularProgressIndicator(
                 strokeWidth: 3.0,
                 valueColor: AlwaysStoppedAnimation(Colors.white),
               ),
             );
-          } else if (index < _processIndex) {
+          } else if (index < widget.processIndex) {
             color = completeColor;
-            child = Icon(
+            child = const Icon(
               Icons.check,
               color: Colors.white,
               size: 15.0,
@@ -179,7 +184,7 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
             color = todoColor;
           }
 
-          if (index <= _processIndex) {
+          if (index <= widget.processIndex) {
             return Stack(
               children: [
                 CustomPaint(
@@ -187,7 +192,7 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
                   painter: _BezierPainter(
                     color: color,
                     drawStart: index > 0,
-                    drawEnd: index < _processIndex,
+                    drawEnd: index < widget.processIndex,
                   ),
                 ),
                 DotIndicator(
@@ -201,7 +206,7 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
             return Stack(
               children: [
                 CustomPaint(
-                  size: Size(15.0, 15.0),
+                  size: const Size(15.0, 15.0),
                   painter: _BezierPainter(
                     color: color,
                     drawEnd: index < widget.commands.length - 1,
@@ -217,7 +222,7 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
         },
         connectorBuilder: (_, index, type) {
           if (index > 0) {
-            if (index == _processIndex) {
+            if (index == widget.processIndex) {
               final prevColor = getColor(index - 1);
               final color = getColor(index);
               List<Color> gradientColors;
@@ -305,7 +310,7 @@ class _BezierPainter extends CustomPainter {
       path = Path()
         ..moveTo(offset1.dx, offset1.dy)
         ..quadraticBezierTo(size.width, size.height / 2, size.width + radius,
-            radius) // TODO connector end & gradient
+            radius)
         ..quadraticBezierTo(size.width, size.height / 2, offset2.dx, offset2.dy)
         ..close();
 

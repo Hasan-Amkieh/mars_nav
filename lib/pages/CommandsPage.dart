@@ -1,7 +1,9 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:mars_nav/services/SampleData.dart";
 import "package:mars_nav/widgets/CommandContainer.dart";
 import "package:mars_nav/widgets/ProcessTimeline.dart";
+import 'package:timelines/timelines.dart';
 
 import "../main.dart";
 import "../services/Commands.dart";
@@ -29,6 +31,8 @@ class CommandsPageState extends State<CommandsPage> {
     super.initState();
   }
 
+  int processIndex = 2;
+
   List<Command> commands = [];
   int photographyIndex = 0;
   int roverCameraResIndex = 0;
@@ -49,59 +53,99 @@ class CommandsPageState extends State<CommandsPage> {
   bool isNavigationGPS = false;
   List<DirectionalVector> navCommandWaypoints = [];
 
+  int sampleTypeIndex = 0;
+  int locationTypeIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    Widget navigationCommandButtons = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    Widget navigationCommandButtons = Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        TextButton.icon(
-          style: ButtonStyle(
-            side: MaterialStateProperty.all(BorderSide(
-                color: hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
-            backgroundColor: MaterialStateProperty.resolveWith((states) {
-              if (states.isNotEmpty) {
-                if (MaterialState.hovered == states.first) {
-                  return Colors.transparent;
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.4,
+          height: 130,
+          child: Timeline.tileBuilder(
+            theme: TimelineThemeData(
+              direction: Axis.horizontal,
+              connectorTheme: const ConnectorThemeData(
+                space: 20.0,
+                thickness: 5.0,
+              ),
+            ),
+            builder: TimelineTileBuilder.fromStyle(
+                itemCount: navCommandWaypoints.length,
+                contentsBuilder: (context, index) {
+                  return Text(
+                      "${navCommandWaypoints[index].distance.toStringAsFixed(1)}m ${navCommandWaypoints[index].compassAngle.toStringAsFixed(1)} ${NavigationCommand.getDirectionExpressionFromAngle(navCommandWaypoints[index].compassAngle)}   ",
+                      style: const TextStyle(color: Colors.white),
+                  );
                 }
-              }
-              return hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor.withOpacity(1.0);
-            }),
+            ),
           ),
-          onPressed: hours == 0 && minutes == 0 && seconds == 0 ? null : () {
-            setState(() {
-              if (isNavigationGPS) {
-                navCommandWaypoints.add(GPSLocation.toDirectionalVector(
-                    GPSLocation(latitude: double.parse(beginLatitudeFieldStr), longitude: double.parse(beginLongitudeFieldStr)),
-                    GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr))));
-              } else {
-                navCommandWaypoints.add(DirectionalVector(distance: double.parse(distanceFieldStr), compassAngle: double.parse(directionalAngleFieldStr)));
-              }
-            });
-          },
-          label: const Text("Add Waypoint", style: TextStyle(color: Colors.white)),
-          icon: const Icon(CupertinoIcons.map_pin_ellipse, color: Colors.white),
         ),
-        const SizedBox(width: 12),
-        TextButton.icon(
-          style: ButtonStyle(
-            side: MaterialStateProperty.all(BorderSide(
-                color: hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
-            backgroundColor: MaterialStateProperty.resolveWith((states) {
-              if (states.isNotEmpty) {
-                if (MaterialState.hovered == states.first) {
-                  return Colors.transparent;
-                }
-              }
-              return hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor.withOpacity(1.0);
-            }),
-          ),
-          onPressed: hours == 0 && minutes == 0 && seconds == 0 ? null : () {
-            setState(() {
-              addCommand(DelayCommand(toWait: Duration(hours: hours, minutes: minutes, seconds: seconds), createdAt: DateTime.now()));
-            });
-          },
-          label: const Text("Add Command", style: TextStyle(color: Colors.white)),
-          icon: const Icon(Icons.add, color: Colors.white),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              style: ButtonStyle(
+                side: MaterialStateProperty.all(BorderSide(
+                    color: hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
+                backgroundColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.isNotEmpty) {
+                    if (MaterialState.hovered == states.first) {
+                      return Colors.transparent;
+                    }
+                  }
+                  return hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor.withOpacity(1.0);
+                }),
+              ),
+              onPressed: hours == 0 && minutes == 0 && seconds == 0 ? null : () {
+                setState(() {
+                  if (isNavigationGPS) {
+                    navCommandWaypoints.add(GPSLocation.toDirectionalVector(
+                        GPSLocation(latitude: double.parse(beginLatitudeFieldStr), longitude: double.parse(beginLongitudeFieldStr)),
+                        GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr))));
+                  } else {
+                    navCommandWaypoints.add(DirectionalVector(distance: double.parse(distanceFieldStr), compassAngle: double.parse(directionalAngleFieldStr)));
+                  }
+                });
+              },
+              label: const Text("Add Waypoint", style: TextStyle(color: Colors.white)),
+              icon: const Icon(CupertinoIcons.map_pin_ellipse, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            TextButton.icon(
+              style: ButtonStyle(
+                side: MaterialStateProperty.all(BorderSide(
+                    color: navCommandWaypoints.isEmpty ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
+                backgroundColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.isNotEmpty) {
+                    if (MaterialState.hovered == states.first) {
+                      return Colors.transparent;
+                    }
+                  }
+                  return navCommandWaypoints.isEmpty ? Colors.grey : Main.primaryColor.withOpacity(1.0);
+                }),
+              ),
+              onPressed: navCommandWaypoints.isEmpty ? null : () {
+                setState(() {
+                  List<DirectionalVector> dirs = [];
+                  navCommandWaypoints.forEach((element) => dirs.add(element));
+                  Command command = NavigationCommand(directionalVectors: dirs, createdAt: DateTime.now());
+                  command.onDeleted = () {
+                    setState(() {
+                      commands.remove(command);
+                    });
+                  };
+                  addCommand(command);
+                  navCommandWaypoints.clear();
+                });
+              },
+              label: const Text("Add Command", style: TextStyle(color: Colors.white)),
+              icon: const Icon(Icons.add, color: Colors.white),
+            ),
+          ],
         ),
       ],
     );
@@ -194,9 +238,13 @@ class CommandsPageState extends State<CommandsPage> {
                             ),
                             onPressed: hours == 0 && minutes == 0 && seconds == 0 ? null : () {
                               setState(() {
-                                addCommand(DelayCommand(toWait: Duration(hours: hours, minutes: minutes, seconds: seconds), createdAt: DateTime.now(), onDeleted: () {
-                                  ;
-                                }));
+                                Command command = DelayCommand(toWait: Duration(hours: hours, minutes: minutes, seconds: seconds), createdAt: DateTime.now());
+                                command.onDeleted = () {
+                                  setState(() {
+                                    commands.remove(command);
+                                  });
+                                };
+                                addCommand(command);
                               });
                             },
                             label: const Text("Add", style: TextStyle(color: Colors.white)),
@@ -257,7 +305,7 @@ class CommandsPageState extends State<CommandsPage> {
                                       Row(
                                         children: [
                                           SizedBox(
-                                            width: 36,
+                                            width: 42,
                                             height: 36,
                                             child: TextField(
                                               maxLength: 2,
@@ -269,27 +317,21 @@ class CommandsPageState extends State<CommandsPage> {
                                                   } else {
                                                     videoMinutes = int.parse(text);
                                                   }
-                                                  print(videoMinutes);
                                                 });
                                               },
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(color: Colors.white),
                                               decoration: InputDecoration(
-                                                hintText: '-',
-                                                fillColor: Main.accentCanvasColor,
-                                                filled: true,
+                                                hintText: '0-100',
                                                 counterText: '',
-                                                hintStyle: const TextStyle(color: Colors.white),
+                                                hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                                 contentPadding: const EdgeInsets.all(0),
-                                                border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(12)
-                                                ),
                                               ),
                                             ),
                                           ),
                                           const Text("  :  ", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                           SizedBox(
-                                            width: 36,
+                                            width: 42,
                                             height: 36,
                                             child: TextField(
                                               maxLength: 2,
@@ -307,15 +349,10 @@ class CommandsPageState extends State<CommandsPage> {
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(color: Colors.white),
                                               decoration: InputDecoration(
-                                                hintText: '-',
-                                                fillColor: Main.accentCanvasColor,
-                                                filled: true,
+                                                hintText: '0-100',
                                                 counterText: '',
-                                                hintStyle: const TextStyle(color: Colors.white),
+                                                hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                                 contentPadding: const EdgeInsets.all(0),
-                                                border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(12)
-                                                ),
                                               ),
                                             ),
                                           ),
@@ -359,7 +396,14 @@ class CommandsPageState extends State<CommandsPage> {
                             ),
                             onPressed: !validatePhotographyCommand() ? null : () {
                               setState(() {
-                                addCommand(DelayCommand(toWait: Duration(hours: hours, minutes: minutes, seconds: seconds), createdAt: DateTime.now()));
+                                Command command = PhotographyCommand(source: RoverCameras.values[roverCameraIndex], videoDuration: videoMinutes * 60 + videoSeconds,
+                                    type: PhotographyType.values[photographyIndex], resolution: RoverCameraResolution.values[roverCameraResIndex], createdAt: DateTime.now());
+                                command.onDeleted = () {
+                                  setState(() {
+                                    commands.remove(command);
+                                  });
+                                };
+                                addCommand(command);
                               });
                             },
                             label: const Text("Add", style: TextStyle(color: Colors.white)),
@@ -376,7 +420,7 @@ class CommandsPageState extends State<CommandsPage> {
                     children: [
                       CommandContainer(
                         width: MediaQuery.of(context).size.width * 0.42,
-                        height: isNavigationGPS && navCommandWaypoints.isEmpty ? 500 : 300,
+                        height: isNavigationGPS && navCommandWaypoints.isEmpty ? 500 : 330,
                         iconWidget: Image.asset("lib/assets/icons/navigate-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
                         titleWidget: Text("Navigation", style: commandContainerStyle),
                         detailsWidget: TextButton.icon(
@@ -412,15 +456,10 @@ class CommandsPageState extends State<CommandsPage> {
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(color: Colors.white),
                                         decoration: InputDecoration(
-                                          hintText: '-',
-                                          fillColor: Main.accentCanvasColor,
-                                          filled: true,
+                                          hintText: '-180 - 180',
                                           counterText: '',
-                                          hintStyle: const TextStyle(color: Colors.white),
+                                          hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                           contentPadding: const EdgeInsets.all(0),
-                                          border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(12)
-                                          ),
                                         ),
                                       ),
                                     ),
@@ -445,15 +484,10 @@ class CommandsPageState extends State<CommandsPage> {
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(color: Colors.white),
                                         decoration: InputDecoration(
-                                          hintText: '-',
-                                          fillColor: Main.accentCanvasColor,
-                                          filled: true,
+                                          hintText: '-90 - 90',
                                           counterText: '',
-                                          hintStyle: const TextStyle(color: Colors.white),
+                                          hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                           contentPadding: const EdgeInsets.all(0),
-                                          border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(12)
-                                          ),
                                         ),
                                       ),
                                     ),
@@ -483,15 +517,10 @@ class CommandsPageState extends State<CommandsPage> {
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(color: Colors.white),
                                       decoration: InputDecoration(
-                                        hintText: '-',
-                                        fillColor: Main.accentCanvasColor,
-                                        filled: true,
+                                        hintText: '-180 - 180',
                                         counterText: '',
-                                        hintStyle: const TextStyle(color: Colors.white),
+                                        hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                         contentPadding: const EdgeInsets.all(0),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12)
-                                        ),
                                       ),
                                     ),
                                   ),
@@ -516,15 +545,10 @@ class CommandsPageState extends State<CommandsPage> {
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(color: Colors.white),
                                       decoration: InputDecoration(
-                                        hintText: '-',
-                                        fillColor: Main.accentCanvasColor,
-                                        filled: true,
+                                        hintText: '-90 - 90',
                                         counterText: '',
-                                        hintStyle: const TextStyle(color: Colors.white),
+                                        hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                         contentPadding: const EdgeInsets.all(0),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12)
-                                        ),
                                       ),
                                     ),
                                   ),
@@ -552,15 +576,10 @@ class CommandsPageState extends State<CommandsPage> {
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    hintText: '-',
-                                    fillColor: Main.accentCanvasColor,
-                                    filled: true,
+                                    hintText: '0 - 2000',
                                     counterText: '',
-                                    hintStyle: const TextStyle(color: Colors.white),
+                                    hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                     contentPadding: const EdgeInsets.all(0),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12)
-                                    ),
                                   ),
                                 ),
                               ),
@@ -584,21 +603,51 @@ class CommandsPageState extends State<CommandsPage> {
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    hintText: '-',
-                                    fillColor: Main.accentCanvasColor,
-                                    filled: true,
+                                    hintText: '0 - 360',
                                     counterText: '',
-                                    hintStyle: const TextStyle(color: Colors.white),
-                                    contentPadding: const EdgeInsets.all(0),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12)
-                                    ),
+                                    hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                   ),
                                 ),
                               ),
                             ],
                           ),
                           navigationCommandButtons,
+                        ],
+                      ),
+                      CommandContainer(
+                        width: MediaQuery.of(context).size.width * 0.42,
+                        height: 300,
+                        titleWidget: Text("Sample Collection", style: commandContainerStyle),
+                        iconWidget: Image.asset("lib/assets/icons/shovel-white.png", width: Main.iconSize * 1.8, height: Main.iconSize * 1.8),
+                        detailsWidget: TextButton.icon(
+                          label: Text(SampleType.values[sampleTypeIndex].name, style: const TextStyle(color: Main.primaryColor)),
+                          icon: Image.asset("lib/assets/icons/${sampleTypeIndex == 0 ? "sand" : "drill"}-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                          onPressed: () {
+                            setState(() {
+                              if (++sampleTypeIndex == 2) {
+                                sampleTypeIndex = 0;
+                              }
+                            });
+                          }
+                        ),
+                        contents: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text("Extraction Location", style: TextStyle(color: Colors.white)),
+                              TextButton.icon(
+                                label: Text(LocationType.values[locationTypeIndex].name, style: const TextStyle(color: Main.primaryColor)),
+                                icon: Image.asset("lib/assets/icons/${locationTypeIndex == 0 ? "current-location" : "radius"}-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                onPressed: () {
+                                  setState(() {
+                                    if (++locationTypeIndex == 2) {
+                                      locationTypeIndex = 0;
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ],
@@ -609,7 +658,8 @@ class CommandsPageState extends State<CommandsPage> {
           ),
           Column(
             children: [
-              SizedBox(height: 220, child: ProcessTimelinePage(commands: commands)),
+              const Divider(height: 10, thickness: 3),
+              SizedBox(height: 220, child: ProcessTimelinePage(commands: commands, processIndex: processIndex)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -617,9 +667,9 @@ class CommandsPageState extends State<CommandsPage> {
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.green.withOpacity(0.2)),
                     ),
-                    label: Text("Resume", style: TextStyle(color: Colors.green)),
-                    icon: Icon(Icons.play_arrow, color: Colors.green),
-                    onPressed: () {
+                    label: Text("Resume", style: TextStyle(color: commands.isEmpty ? Colors.grey : Colors.green)),
+                    icon: Icon(Icons.play_arrow, color: commands.isEmpty ? Colors.grey : Colors.green),
+                    onPressed: commands.isEmpty ? null : () {
                       ;
                     },
                   ),
@@ -628,9 +678,9 @@ class CommandsPageState extends State<CommandsPage> {
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.red.withOpacity(0.2)),
                     ),
-                    label: Text("Pause", style: TextStyle(color: Colors.red)),
-                    icon: Icon(Icons.pause, color: Colors.red),
-                    onPressed: () {
+                    label: Text("Pause", style: TextStyle(color: commands.isEmpty ? Colors.grey : Colors.red)),
+                    icon: Icon(Icons.pause, color: commands.isEmpty ? Colors.grey : Colors.red),
+                    onPressed: commands.isEmpty ? null : () {
                       ;
                     },
                   ),
@@ -639,10 +689,13 @@ class CommandsPageState extends State<CommandsPage> {
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.orange.withOpacity(0.2)),
                     ),
-                    label: Text("Clear Finished", style: TextStyle(color: Colors.orange)),
-                    icon: Icon(Icons.delete_rounded, color: Colors.orange),
-                    onPressed: () {
-                      ;
+                    label: Text("Clear Finished", style: TextStyle(color: commands.isEmpty ? Colors.grey : Colors.orange)),
+                    icon: Icon(Icons.delete_rounded, color: commands.isEmpty ? Colors.grey : Colors.orange),
+                    onPressed: commands.isEmpty ? null : () {
+                      setState(() {
+                        commands.removeRange(0, processIndex);
+                        processIndex = 0;
+                      });
                     },
                   ),
                   const SizedBox(width: 18),
@@ -650,10 +703,12 @@ class CommandsPageState extends State<CommandsPage> {
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.red.withOpacity(0.2)),
                     ),
-                    label: Text("Clear All", style: TextStyle(color: Colors.red)),
-                    icon: Icon(Icons.clear, color: Colors.red),
-                    onPressed: () {
-                      ;
+                    label: Text("Clear All", style: TextStyle(color: commands.isEmpty ? Colors.grey : Colors.red)),
+                    icon: Icon(Icons.clear, color: commands.isEmpty ? Colors.grey : Colors.red),
+                    onPressed: commands.isEmpty ? null : () {
+                      setState(() {
+                        commands.clear();
+                      });
                     },
                   )
                 ],

@@ -14,7 +14,9 @@ abstract class Command {
   Function()? onStarted;
   Function()? onFinished;
 
-  Command({this.createdAt, this.onStarted, this.onFinished, this.onDeleted});
+  int index;
+
+  Command({this.createdAt, this.onStarted, this.onFinished, this.onDeleted, this.index = -1});
 
   String getTitle();
   String getDescription();
@@ -28,7 +30,7 @@ class NavigationCommand extends Command {
   List<DirectionalVector> directionalVectors;
   double distanceWalked = 0;
 
-  NavigationCommand({required this.directionalVectors, super.createdAt, super.onStarted, super.onFinished, super.onDeleted});
+  NavigationCommand({required this.directionalVectors, super.createdAt, super.onStarted, super.onFinished, super.onDeleted, super.index});
 
   @override
   String getTitle() {
@@ -39,8 +41,11 @@ class NavigationCommand extends Command {
   String getDescription() {
     String msg = "";
     directionalVectors.forEach((element) {
-      msg += "${element.distance} m, ${element.compassAngle} ${getDirectionExpressionFromAngle(element.compassAngle)}";
+      msg += "${element.distance.toStringAsFixed(2)} m, ${element.compassAngle.toStringAsFixed(2)} ${getDirectionExpressionFromAngle(element.compassAngle)}\n";
     });
+    if (msg.endsWith("\n")) {
+      msg = msg.substring(0, msg.length);
+    }
 
     return msg;
   }
@@ -81,11 +86,11 @@ class DelayCommand extends Command {
   Duration toWait;
   DateTime? startedAt;
 
-  DelayCommand({required this.toWait, super.createdAt, super.onStarted, super.onFinished, super.onDeleted});
+  DelayCommand({required this.toWait, super.createdAt, super.onStarted, super.onFinished, super.onDeleted, super.index});
 
   @override
   String getTitle() {
-    return "Delay";
+    return "DELAY";
   }
 
   @override
@@ -137,7 +142,7 @@ class SampleCommand extends Command {
   double sampleDepth;
 
   SampleCommand({required this.locationType, required this.sampleRadius, required this.numberOfSamples,
-                required this.sampleType, required this.sampleDepth, super.createdAt, super.onStarted, super.onFinished, super.onDeleted}) {
+                required this.sampleType, required this.sampleDepth, super.createdAt, super.onStarted, super.onFinished, super.onDeleted, super.index}) {
 
     if (locationType == LocationType.inRadius) assert(validateSampleRadius(sampleRadius));
     assert(validateNumberOfSamples(numberOfSamples));
@@ -147,7 +152,7 @@ class SampleCommand extends Command {
 
   @override
   String getTitle() {
-    return "${sampleType.name} Sample Extraction";
+    return "${sampleType.name} SAMPLE EXTRACTION";
   }
 
   @override
@@ -204,7 +209,7 @@ class PhotographyCommand extends Command {
   RoverCameraResolution resolution;
   RoverCameras source;
 
-  PhotographyCommand({required this.type, required this.videoDuration, required this.resolution, required this.source, super.createdAt, super.onStarted, super.onFinished, super.onDeleted}) {
+  PhotographyCommand({required this.type, this.videoDuration = -1, required this.resolution, required this.source, super.createdAt, super.onStarted, super.onFinished, super.onDeleted, super.index}) {
 
     if (type == PhotographyType.video) validateVideoDuration(videoDuration);
 
@@ -212,17 +217,27 @@ class PhotographyCommand extends Command {
 
   @override
   Widget resolveIcon(Color color) {
-    return Icon(Icons.more_time_outlined, size: Main.iconSize * 2, color: color);
+    final IconData icon;
+
+    if (type.index == 1) {
+      icon = Icons.image_outlined;
+    } else if (type.index == 0) {
+      icon = Icons.panorama_outlined;
+    } else {
+      icon = Icons.video_camera_back;
+    }
+
+    return Icon(icon, size: Main.iconSize * 2, color: color);
   }
 
   @override
   String getTitle() {
-    return "${type.name} ${resolution.width}x${resolution.height}";
+    return "${type.name.toUpperCase()} ${resolution.width}x${resolution.height}";
   }
 
   @override
   String getDescription() {
-    return "${source.name} ${type.index == 2 ? videoDuration.toString() : ""}";
+    return "${source.name} ${type.index == 2 ? "${videoDuration ~/ 60}m ${videoDuration % 60}s" : ""}";
   }
 
   static bool validateVideoDuration(int duration) {
@@ -247,7 +262,7 @@ class DroneCommand extends Command {
   DroneCameraResolution droneCamRes;
   bool isManualDemobilization;
 
-  DroneCommand({required this.altitude, required this.numberOfPics, required this.droneCamRes, required this.isManualDemobilization, super.createdAt, super.onStarted, super.onFinished, super.onDeleted}) {
+  DroneCommand({required this.altitude, required this.numberOfPics, required this.droneCamRes, required this.isManualDemobilization, super.createdAt, super.onStarted, super.onFinished, super.onDeleted, super.index}) {
 
     assert(validateAltitude(altitude));
     assert(validateNumberOfCPhotos(numberOfPics));
