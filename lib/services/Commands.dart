@@ -1,22 +1,78 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:mars_nav/services/SampleData.dart';
+
+import '../main.dart';
 
 
 abstract class Command {
 
   DateTime? createdAt;
+  Function()? onDeleted;
+  Function()? onStarted;
+  Function()? onFinished;
 
-  Command({this.createdAt});
+  Command({this.createdAt, this.onStarted, this.onFinished, this.onDeleted});
+
+  String getTitle();
+  String getDescription();
+
+  Widget resolveIcon(Color color);
 
 }
 
 class NavigationCommand extends Command {
 
-  DirectionalVector directionalVector;
+  List<DirectionalVector> directionalVectors;
   double distanceWalked = 0;
 
-  NavigationCommand({required this.directionalVector, super.createdAt});
+  NavigationCommand({required this.directionalVectors, super.createdAt, super.onStarted, super.onFinished, super.onDeleted});
+
+  @override
+  String getTitle() {
+    return "Navigation";
+  }
+
+  @override
+  String getDescription() {
+    String msg = "";
+    directionalVectors.forEach((element) {
+      msg += "${element.distance} m, ${element.compassAngle} ${getDirectionExpressionFromAngle(element.compassAngle)}";
+    });
+
+    return msg;
+  }
+  
+  @override
+  Widget resolveIcon(Color color) {
+    return Image.asset("lib/assets/icons/navigate-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
+  }
+
+  static String getDirectionExpressionFromAngle(double angle) {
+    if (angle >= 0 && angle < 22.5) {
+      return 'North';
+    } else if (angle >= 22.5 && angle < 67.5) {
+      return 'Northeast';
+    } else if (angle >= 67.5 && angle < 112.5) {
+      return 'East';
+    } else if (angle >= 112.5 && angle < 157.5) {
+      return 'Southeast';
+    } else if (angle >= 157.5 && angle < 202.5) {
+      return 'South';
+    } else if (angle >= 202.5 && angle < 247.5) {
+      return 'Southwest';
+    } else if (angle >= 247.5 && angle < 292.5) {
+      return 'West';
+    } else if (angle >= 292.5 && angle < 337.5) {
+      return 'Northwest';
+    } else if (angle >= 337.5 && angle < 360) {
+      return 'North';
+    }
+
+    return "ERROR";
+  }
 
 }
 
@@ -25,7 +81,43 @@ class DelayCommand extends Command {
   Duration toWait;
   DateTime? startedAt;
 
-  DelayCommand({required this.toWait, super.createdAt});
+  DelayCommand({required this.toWait, super.createdAt, super.onStarted, super.onFinished, super.onDeleted});
+
+  @override
+  String getTitle() {
+    return "Delay";
+  }
+
+  @override
+  String getDescription() {
+    int hours = toWait.inHours;
+    int minutes = toWait.inMinutes.remainder(60);
+    int seconds = toWait.inSeconds.remainder(60);
+    String msg = "";
+
+    msg += "Halt for";
+    if (hours > 0) {
+      msg += " ${hours}h";
+    }
+    if (minutes > 0) {
+      msg += " ${minutes}m";
+    }
+    if (seconds > 0) {
+      msg += " ${seconds}s";
+    }
+
+    if (startedAt != null) {
+      DateTime finAt = startedAt!.add(toWait);
+      msg += "\nends at ${finAt.day}/${finAt.month} ${finAt.hour}:${finAt.minute}:${finAt.second}";
+    }
+    return msg;
+  }
+
+  @override
+  Widget resolveIcon(Color color) {
+    return Icon(Icons.more_time_outlined, size: Main.iconSize * 2, color: color
+    );
+  }
 
 }
 
@@ -45,12 +137,27 @@ class SampleCommand extends Command {
   double sampleDepth;
 
   SampleCommand({required this.locationType, required this.sampleRadius, required this.numberOfSamples,
-                required this.sampleType, required this.sampleDepth, super.createdAt}) {
+                required this.sampleType, required this.sampleDepth, super.createdAt, super.onStarted, super.onFinished, super.onDeleted}) {
 
     if (locationType == LocationType.inRadius) assert(validateSampleRadius(sampleRadius));
     assert(validateNumberOfSamples(numberOfSamples));
     if (sampleType == SampleType.rock) assert(validateSampleDepth(sampleDepth));
 
+  }
+
+  @override
+  String getTitle() {
+    return "${sampleType.name} Sample Extraction";
+  }
+
+  @override
+  String getDescription() {
+    return "";
+  }
+
+  @override
+  Widget resolveIcon(Color color) {
+    return Icon(Icons.more_time_outlined, size: Main.iconSize * 2, color: color);
   }
 
   static bool validateSampleRadius(double radius) {
@@ -97,10 +204,25 @@ class PhotographyCommand extends Command {
   RoverCameraResolution resolution;
   RoverCameras source;
 
-  PhotographyCommand({required this.type, required this.videoDuration, required this.resolution, required this.source, super.createdAt}) {
+  PhotographyCommand({required this.type, required this.videoDuration, required this.resolution, required this.source, super.createdAt, super.onStarted, super.onFinished, super.onDeleted}) {
 
     if (type == PhotographyType.video) validateVideoDuration(videoDuration);
 
+  }
+
+  @override
+  Widget resolveIcon(Color color) {
+    return Icon(Icons.more_time_outlined, size: Main.iconSize * 2, color: color);
+  }
+
+  @override
+  String getTitle() {
+    return "${type.name} ${resolution.width}x${resolution.height}";
+  }
+
+  @override
+  String getDescription() {
+    return "${source.name} ${type.index == 2 ? videoDuration.toString() : ""}";
   }
 
   static bool validateVideoDuration(int duration) {
@@ -125,11 +247,26 @@ class DroneCommand extends Command {
   DroneCameraResolution droneCamRes;
   bool isManualDemobilization;
 
-  DroneCommand({required this.altitude, required this.numberOfPics, required this.droneCamRes, required this.isManualDemobilization, super.createdAt}) {
+  DroneCommand({required this.altitude, required this.numberOfPics, required this.droneCamRes, required this.isManualDemobilization, super.createdAt, super.onStarted, super.onFinished, super.onDeleted}) {
 
     assert(validateAltitude(altitude));
     assert(validateNumberOfCPhotos(numberOfPics));
 
+  }
+
+  @override
+  Widget resolveIcon(Color color) {
+    return Image.asset("lib/assets/icons/drone-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
+  }
+
+  @override
+  String getTitle() {
+    return "";
+  }
+
+  @override
+  String getDescription() {
+    return "";
   }
 
   static bool validateAltitude(double altitude) {

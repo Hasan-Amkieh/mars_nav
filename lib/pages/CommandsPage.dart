@@ -1,6 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:mars_nav/widgets/CommandContainer.dart";
+import "package:mars_nav/widgets/ProcessTimeline.dart";
 
 import "../main.dart";
 import "../services/Commands.dart";
@@ -39,12 +40,12 @@ class CommandsPageState extends State<CommandsPage> {
   int videoSeconds = 0;
   int videoMinutes = 0;
 
-  double beginLongitudeField = 0;
-  double beginLatitudeField = 0;
-  double endLongitudeField = 0;
-  double endLatitudeField = 0;
-  double distanceField = 0;
-  double directionalAngleField = 0;
+  String beginLongitudeFieldStr = '';
+  String beginLatitudeFieldStr = '';
+  String endLongitudeFieldStr = '';
+  String endLatitudeFieldStr = '';
+  String distanceFieldStr = '';
+  String directionalAngleFieldStr = '';
   bool isNavigationGPS = false;
   List<DirectionalVector> navCommandWaypoints = [];
 
@@ -70,10 +71,10 @@ class CommandsPageState extends State<CommandsPage> {
             setState(() {
               if (isNavigationGPS) {
                 navCommandWaypoints.add(GPSLocation.toDirectionalVector(
-                    GPSLocation(latitude: beginLatitudeField, longitude: beginLongitudeField),
-                    GPSLocation(latitude: endLatitudeField, longitude: endLongitudeField)));
+                    GPSLocation(latitude: double.parse(beginLatitudeFieldStr), longitude: double.parse(beginLongitudeFieldStr)),
+                    GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr))));
               } else {
-                navCommandWaypoints.add(DirectionalVector(distance: distanceField, compassAngle: directionalAngleField));
+                navCommandWaypoints.add(DirectionalVector(distance: double.parse(distanceFieldStr), compassAngle: double.parse(directionalAngleFieldStr)));
               }
             });
           },
@@ -193,7 +194,9 @@ class CommandsPageState extends State<CommandsPage> {
                             ),
                             onPressed: hours == 0 && minutes == 0 && seconds == 0 ? null : () {
                               setState(() {
-                                addCommand(DelayCommand(toWait: Duration(hours: hours, minutes: minutes, seconds: seconds), createdAt: DateTime.now()));
+                                addCommand(DelayCommand(toWait: Duration(hours: hours, minutes: minutes, seconds: seconds), createdAt: DateTime.now(), onDeleted: () {
+                                  ;
+                                }));
                               });
                             },
                             label: const Text("Add", style: TextStyle(color: Colors.white)),
@@ -272,7 +275,7 @@ class CommandsPageState extends State<CommandsPage> {
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(color: Colors.white),
                                               decoration: InputDecoration(
-                                                hintText: '0',
+                                                hintText: '-',
                                                 fillColor: Main.accentCanvasColor,
                                                 filled: true,
                                                 counterText: '',
@@ -304,7 +307,7 @@ class CommandsPageState extends State<CommandsPage> {
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(color: Colors.white),
                                               decoration: InputDecoration(
-                                                hintText: '0',
+                                                hintText: '-',
                                                 fillColor: Main.accentCanvasColor,
                                                 filled: true,
                                                 counterText: '',
@@ -373,7 +376,7 @@ class CommandsPageState extends State<CommandsPage> {
                     children: [
                       CommandContainer(
                         width: MediaQuery.of(context).size.width * 0.42,
-                        height: isNavigationGPS ? 500 : 300,
+                        height: isNavigationGPS && navCommandWaypoints.isEmpty ? 500 : 300,
                         iconWidget: Image.asset("lib/assets/icons/navigate-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
                         titleWidget: Text("Navigation", style: commandContainerStyle),
                         detailsWidget: TextButton.icon(
@@ -403,17 +406,13 @@ class CommandsPageState extends State<CommandsPage> {
                                         keyboardType: TextInputType.number,
                                         onChanged: (String text) {
                                           setState(() {
-                                            if (text.isEmpty) {
-                                              beginLongitudeField = 0;
-                                            } else {
-                                              beginLongitudeField = double.parse(text);
-                                            }
+                                            beginLongitudeFieldStr = text;
                                           });
                                         },
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(color: Colors.white),
                                         decoration: InputDecoration(
-                                          hintText: '0',
+                                          hintText: '-',
                                           fillColor: Main.accentCanvasColor,
                                           filled: true,
                                           counterText: '',
@@ -440,17 +439,13 @@ class CommandsPageState extends State<CommandsPage> {
                                         keyboardType: TextInputType.number,
                                         onChanged: (String text) {
                                           setState(() {
-                                            if (text.isEmpty) {
-                                              beginLatitudeField = 0;
-                                            } else {
-                                              beginLatitudeField = double.parse(text);
-                                            }
+                                            beginLatitudeFieldStr = text;
                                           });
                                         },
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(color: Colors.white),
                                         decoration: InputDecoration(
-                                          hintText: '0',
+                                          hintText: '-',
                                           fillColor: Main.accentCanvasColor,
                                           filled: true,
                                           counterText: '',
@@ -482,17 +477,13 @@ class CommandsPageState extends State<CommandsPage> {
                                       keyboardType: TextInputType.number,
                                       onChanged: (String text) {
                                         setState(() {
-                                          if (text.isEmpty) {
-                                            endLongitudeField = 0;
-                                          } else {
-                                            endLongitudeField = double.parse(text);
-                                          }
+                                          endLongitudeFieldStr = text;
                                         });
                                       },
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(color: Colors.white),
                                       decoration: InputDecoration(
-                                        hintText: '0',
+                                        hintText: '-',
                                         fillColor: Main.accentCanvasColor,
                                         filled: true,
                                         counterText: '',
@@ -519,17 +510,13 @@ class CommandsPageState extends State<CommandsPage> {
                                       keyboardType: TextInputType.number,
                                       onChanged: (String text) {
                                         setState(() {
-                                          if (text.isEmpty) {
-                                            endLatitudeField = 0;
-                                          } else {
-                                            endLatitudeField = double.parse(text);
-                                          }
+                                          endLatitudeFieldStr = text;
                                         });
                                       },
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(color: Colors.white),
                                       decoration: InputDecoration(
-                                        hintText: '0',
+                                        hintText: '-',
                                         fillColor: Main.accentCanvasColor,
                                         filled: true,
                                         counterText: '',
@@ -559,17 +546,13 @@ class CommandsPageState extends State<CommandsPage> {
                                   keyboardType: TextInputType.number,
                                   onChanged: (String text) {
                                     setState(() {
-                                      if (text.isEmpty) {
-                                        distanceField = 0;
-                                      } else {
-                                        distanceField = double.parse(text);
-                                      }
+                                      distanceFieldStr = text;
                                     });
                                   },
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    hintText: '0',
+                                    hintText: '-',
                                     fillColor: Main.accentCanvasColor,
                                     filled: true,
                                     counterText: '',
@@ -595,17 +578,13 @@ class CommandsPageState extends State<CommandsPage> {
                                   keyboardType: TextInputType.number,
                                   onChanged: (String text) {
                                     setState(() {
-                                      if (text.isEmpty) {
-                                        directionalAngleField = 0;
-                                      } else {
-                                        directionalAngleField = double.parse(text);
-                                      }
+                                      directionalAngleFieldStr = text;
                                     });
                                   },
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    hintText: '0',
+                                    hintText: '-',
                                     fillColor: Main.accentCanvasColor,
                                     filled: true,
                                     counterText: '',
@@ -630,7 +609,55 @@ class CommandsPageState extends State<CommandsPage> {
           ),
           Column(
             children: [
-              Text("Test 1 2 3...", style: TextStyle(color: Colors.white)),
+              SizedBox(height: 220, child: ProcessTimelinePage(commands: commands)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton.icon(
+                    style: ButtonStyle(
+                      overlayColor: MaterialStateProperty.all(Colors.green.withOpacity(0.2)),
+                    ),
+                    label: Text("Resume", style: TextStyle(color: Colors.green)),
+                    icon: Icon(Icons.play_arrow, color: Colors.green),
+                    onPressed: () {
+                      ;
+                    },
+                  ),
+                  const SizedBox(width: 18),
+                  TextButton.icon(
+                    style: ButtonStyle(
+                      overlayColor: MaterialStateProperty.all(Colors.red.withOpacity(0.2)),
+                    ),
+                    label: Text("Pause", style: TextStyle(color: Colors.red)),
+                    icon: Icon(Icons.pause, color: Colors.red),
+                    onPressed: () {
+                      ;
+                    },
+                  ),
+                  const SizedBox(width: 18),
+                  TextButton.icon(
+                    style: ButtonStyle(
+                      overlayColor: MaterialStateProperty.all(Colors.orange.withOpacity(0.2)),
+                    ),
+                    label: Text("Clear Finished", style: TextStyle(color: Colors.orange)),
+                    icon: Icon(Icons.delete_rounded, color: Colors.orange),
+                    onPressed: () {
+                      ;
+                    },
+                  ),
+                  const SizedBox(width: 18),
+                  TextButton.icon(
+                    style: ButtonStyle(
+                      overlayColor: MaterialStateProperty.all(Colors.red.withOpacity(0.2)),
+                    ),
+                    label: Text("Clear All", style: TextStyle(color: Colors.red)),
+                    icon: Icon(Icons.clear, color: Colors.red),
+                    onPressed: () {
+                      ;
+                    },
+                  )
+                ],
+              ),
             ],
           ),
         ],
