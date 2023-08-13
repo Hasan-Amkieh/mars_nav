@@ -8,8 +8,9 @@ class CommandContainer extends StatelessWidget {
   final Widget? detailsWidget;
   final double width;
   final double height;
+  final CrossAxisAlignment crossAxisAlignment;
 
-  CommandContainer({required this.iconWidget, required this.titleWidget, required this.contents, required this.detailsWidget, required this.width, required this.height});
+  CommandContainer({required this.iconWidget, required this.titleWidget, required this.contents, required this.detailsWidget, required this.width, required this.height, this.crossAxisAlignment = CrossAxisAlignment.start});
 
 
   @override
@@ -40,6 +41,7 @@ class CommandContainer extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: crossAxisAlignment,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

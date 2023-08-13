@@ -52,7 +52,17 @@ class NavigationCommand extends Command {
   
   @override
   Widget resolveIcon(Color color) {
-    return Image.asset("lib/assets/icons/navigate-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
+
+    String colorStr;
+    if (color == const Color(0xffd1d2d7)) {
+      colorStr = "white";
+    } else if (color == const Color(0xff5ec792)) {
+      colorStr = "progress";
+    } else {
+      colorStr = "complete";
+    }
+
+    return Image.asset("lib/assets/icons/navigate-$colorStr.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
   }
 
   static String getDirectionExpressionFromAngle(double angle) {
@@ -152,17 +162,35 @@ class SampleCommand extends Command {
 
   @override
   String getTitle() {
-    return "${sampleType.name} SAMPLE EXTRACTION";
+    return "${sampleType.name.toUpperCase()} SAMPLE EXTRACTION";
   }
 
   @override
   String getDescription() {
-    return "";
+    String msg = '';
+    if (locationType == LocationType.inRadius) {
+      msg += "$numberOfSamples samples in radius of $sampleRadius cm\n";
+    }
+
+    if (sampleType == SampleType.rock) {
+      msg += "$sampleDepth meters deep";
+    }
+
+    return msg;
   }
 
   @override
   Widget resolveIcon(Color color) {
-    return Icon(Icons.more_time_outlined, size: Main.iconSize * 2, color: color);
+    String colorStr;
+    if (color == const Color(0xffd1d2d7)) {
+      colorStr = "white";
+    } else if (color == const Color(0xff5ec792)) {
+      colorStr = "progress";
+    } else {
+      colorStr = "complete";
+    }
+
+    return Image.asset("lib/assets/icons/${sampleType == SampleType.debris ? "sand" : "drill"}-$colorStr.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
   }
 
   static bool validateSampleRadius(double radius) {

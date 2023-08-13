@@ -20,15 +20,17 @@ class ShellPageState extends State<ShellPage> {
   @override
   void initState() {
     super.initState();
-    echoTimer = Timer.periodic(const Duration(milliseconds: 50), echoLoop);
+    if (controllers.isEmpty) {
+      echoTimer = Timer.periodic(const Duration(milliseconds: 50), echoLoop);
 
-    controllers.add(Console(controller: FlutterConsoleController(), name: "Console 0"));
-    tabs.add(FlutterConsole(controller: controllers.first.controller, height: widget.height, width: widget.width));
+      controllers.add(Console(controller: FlutterConsoleController(), name: "Console 0"));
+      tabs.add(FlutterConsole(controller: controllers.first.controller, height: widget.height, width: widget.width));
+    }
   }
 
-  List<FlutterConsole> tabs = [];
-  List<Console> controllers = [];
-  List<Tab> tabBars = [];
+  static List<FlutterConsole> tabs = [];
+  static List<Console> controllers = [];
+  static List<Tab> tabBars = [];
 
   void echoLoop(timer) {
     for (int i = 0 ; i < controllers.length ; i++) {
@@ -63,7 +65,7 @@ class ShellPageState extends State<ShellPage> {
                      title: const Text('Enter Console Name', style: TextStyle(color: Colors.white)),
                      content: TextField(
                        controller: _nameController,
-                       style: TextStyle(color: Colors.white),
+                       style: const TextStyle(color: Colors.white),
                        decoration: InputDecoration(labelText: 'Name', labelStyle: TextStyle(color: Colors.white), floatingLabelStyle: TextStyle(color: Theme.of(context).primaryColor)),
                      ),
                      actions: [
@@ -163,11 +165,11 @@ class DeleteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.delete_outline, color: Colors.red),
+      icon: const Icon(Icons.delete_outline, color: Colors.red),
       onPressed: () {
         parent.setState(() {
-          parent.tabs.removeAt(index);
-          parent.controllers.removeAt(index);
+          ShellPageState.tabs.removeAt(index);
+          ShellPageState.controllers.removeAt(index);
         });
       },
     );

@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:mars_nav/services/SampleData.dart";
@@ -22,24 +24,24 @@ class CommandsPage extends StatefulWidget {
 
 class CommandsPageState extends State<CommandsPage> {
 
-  late int hours = 0;
-  late int minutes = 10;
-  late int seconds = 0;
-
   @override
   void initState() {
     super.initState();
   }
 
-  int processIndex = 2;
-
-  List<Command> commands = [];
-  int photographyIndex = 0;
-  int roverCameraResIndex = 0;
-  int roverCameraIndex = 0;
+  static int processIndex = 2;
+  static List<Command> commands = [];
 
   static TextStyle commandContainerStyle = const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16);
   static const verticalSeparator = SizedBox(height: 8);
+
+  String hours = '';
+  String minutes = '';
+  String seconds = '';
+
+  int photographyIndex = 0;
+  int roverCameraResIndex = 0;
+  int roverCameraIndex = 0;
 
   int videoSeconds = 0;
   int videoMinutes = 0;
@@ -55,6 +57,13 @@ class CommandsPageState extends State<CommandsPage> {
 
   int sampleTypeIndex = 0;
   int locationTypeIndex = 0;
+  String sampleDepth = '';
+  String sampleRadius = '';
+  String numberOfSamples = '';
+
+  bool isPaused = false;
+
+  static Timer? delayTimer;
 
   @override
   Widget build(BuildContext context) {
@@ -90,17 +99,17 @@ class CommandsPageState extends State<CommandsPage> {
             TextButton.icon(
               style: ButtonStyle(
                 side: MaterialStateProperty.all(BorderSide(
-                    color: hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
+                    color: !validateWaypointCommand() ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
                 backgroundColor: MaterialStateProperty.resolveWith((states) {
                   if (states.isNotEmpty) {
                     if (MaterialState.hovered == states.first) {
                       return Colors.transparent;
                     }
                   }
-                  return hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor.withOpacity(1.0);
+                  return !validateWaypointCommand() ? Colors.grey : Main.primaryColor.withOpacity(1.0);
                 }),
               ),
-              onPressed: hours == 0 && minutes == 0 && seconds == 0 ? null : () {
+              onPressed: !validateWaypointCommand() ? null : () {
                 setState(() {
                   if (isNavigationGPS) {
                     navCommandWaypoints.add(GPSLocation.toDirectionalVector(
@@ -168,77 +177,107 @@ class CommandsPageState extends State<CommandsPage> {
                         iconWidget: const Icon(Icons.more_time_outlined, color: Colors.white, size: Main.iconSize * 1.8),
                         titleWidget: Text("Delay", style: commandContainerStyle),
                         detailsWidget: null,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         contents: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Column(
-                                children: [
-                                  const Text('Hours', style: TextStyle(color: Colors.white)),
-                                  Slider(
-                                    value: hours.toDouble(),
-                                    min: 0,
-                                    max: 2,
-                                    onChanged: (value) {
+                          SizedBox(
+                            width: 250,
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Hours', style: TextStyle(color: Colors.white)),
+                                Text('Minutes', style: TextStyle(color: Colors.white)),
+                                Text('Seconds', style: TextStyle(color: Colors.white)),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 250,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: 46,
+                                  height: 36,
+                                  child: TextField(
+                                    maxLength: 2,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (String text) {
                                       setState(() {
-                                        hours = value.toInt();
+                                        hours = text;
                                       });
                                     },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: '0-2',
+                                      counterText: '',
+                                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
+                                      contentPadding: const EdgeInsets.all(0),
+                                    ),
                                   ),
-                                  Text('$hours h', style: TextStyle(color: Colors.white)),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  const Text('Minutes', style: TextStyle(color: Colors.white)),
-                                  Slider(
-                                    value: minutes.toDouble(),
-                                    min: 0,
-                                    max: 59,
-                                    onChanged: (value) {
+                                ),
+                                SizedBox(
+                                  width: 46,
+                                  height: 36,
+                                  child: TextField(
+                                    maxLength: 2,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (String text) {
                                       setState(() {
-                                        minutes = value.toInt();
+                                        minutes = text;
                                       });
                                     },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: '0-60',
+                                      counterText: '',
+                                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
+                                      contentPadding: const EdgeInsets.all(0),
+                                    ),
                                   ),
-                                  Text('$minutes min', style: TextStyle(color: Colors.white)),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  const Text('Seconds', style: TextStyle(color: Colors.white)),
-                                  Slider(
-                                    value: seconds.toDouble(),
-                                    min: 0,
-                                    max: 59,
-                                    onChanged: (value) {
+                                ),
+                                SizedBox(
+                                  width: 46,
+                                  height: 36,
+                                  child: TextField(
+                                    maxLength: 2,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (String text) {
                                       setState(() {
-                                        seconds = value.toInt();
+                                        seconds = text;
                                       });
                                     },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: '0-60',
+                                      counterText: '',
+                                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
+                                      contentPadding: const EdgeInsets.all(0),
+                                    ),
                                   ),
-                                  Text('$seconds sec', style: TextStyle(color: Colors.white)),
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
                           TextButton.icon(
                             style: ButtonStyle(
                               side: MaterialStateProperty.all(BorderSide(
-                                  color: hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
+                                  color: hours.isEmpty && minutes.isEmpty && seconds.isEmpty ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
                               backgroundColor: MaterialStateProperty.resolveWith((states) {
                                 if (states.isNotEmpty) {
                                   if (MaterialState.hovered == states.first) {
                                     return Colors.transparent;
                                   }
                                 }
-                                return hours == 0 && minutes == 0 && seconds == 0 ? Colors.grey : Main.primaryColor.withOpacity(1.0);
+                                return hours.isEmpty && minutes.isEmpty && seconds.isEmpty ? Colors.grey : Main.primaryColor.withOpacity(1.0);
                               }),
                             ),
-                            onPressed: hours == 0 && minutes == 0 && seconds == 0 ? null : () {
+                            onPressed: hours.isEmpty && minutes.isEmpty && seconds.isEmpty ? null : () {
                               setState(() {
-                                Command command = DelayCommand(toWait: Duration(hours: hours, minutes: minutes, seconds: seconds), createdAt: DateTime.now());
+                                Command command = DelayCommand(toWait: Duration(hours: hours.isNotEmpty ? int.parse(hours) : 0, minutes: minutes.isNotEmpty ? int.parse(minutes) : 0, seconds: seconds.isNotEmpty ? int.parse(seconds) : 0), createdAt: DateTime.now());
                                 command.onDeleted = () {
                                   setState(() {
                                     commands.remove(command);
@@ -254,6 +293,7 @@ class CommandsPageState extends State<CommandsPage> {
                       ),
                       CommandContainer(
                         width: MediaQuery.of(context).size.width * 0.42,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         height: 300,
                         iconWidget: const Icon(Icons.add_photo_alternate_outlined, color: Colors.white, size: Main.iconSize * 1.8),
                         titleWidget: Text("Photography", style: commandContainerStyle),
@@ -343,7 +383,6 @@ class CommandsPageState extends State<CommandsPage> {
                                                   } else {
                                                     videoSeconds = int.parse(text);
                                                   }
-                                                  print(videoSeconds);
                                                 });
                                               },
                                               textAlign: TextAlign.center,
@@ -576,7 +615,7 @@ class CommandsPageState extends State<CommandsPage> {
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    hintText: '0 - 2000',
+                                    hintText: '10 - 2000',
                                     counterText: '',
                                     hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
                                     contentPadding: const EdgeInsets.all(0),
@@ -617,6 +656,7 @@ class CommandsPageState extends State<CommandsPage> {
                       CommandContainer(
                         width: MediaQuery.of(context).size.width * 0.42,
                         height: 300,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         titleWidget: Text("Sample Collection", style: commandContainerStyle),
                         iconWidget: Image.asset("lib/assets/icons/shovel-white.png", width: Main.iconSize * 1.8, height: Main.iconSize * 1.8),
                         detailsWidget: TextButton.icon(
@@ -631,6 +671,36 @@ class CommandsPageState extends State<CommandsPage> {
                           }
                         ),
                         contents: [
+                          Visibility(
+                            visible: sampleTypeIndex == 1,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text("Sample Depth (cm)", style: TextStyle(color: Colors.white)),
+                                SizedBox(
+                                  width: 42,
+                                  height: 38,
+                                  child: TextField(
+                                    maxLength: 2,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (String text) {
+                                      setState(() {
+                                        sampleDepth = text;
+                                      });
+                                    },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: '2-30',
+                                      counterText: '',
+                                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
+                                      contentPadding: const EdgeInsets.all(0),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -647,6 +717,94 @@ class CommandsPageState extends State<CommandsPage> {
                                 },
                               ),
                             ],
+                          ),
+                          Visibility(
+                            visible: locationTypeIndex == 1,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text("collection radius (m)", style: TextStyle(color: Colors.white)),
+                                SizedBox(
+                                  width: 48,
+                                  height: 38,
+                                  child: TextField(
+                                    maxLength: 3,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (String text) {
+                                      setState(() {
+                                        sampleRadius = text;
+                                      });
+                                    },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: '2-200',
+                                      counterText: '',
+                                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
+                                      contentPadding: const EdgeInsets.all(0),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Visibility(
+                            visible: locationTypeIndex == 1,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text("Number of Samples", style: TextStyle(color: Colors.white)),
+                                SizedBox(
+                                  width: 34,
+                                  height: 38,
+                                  child: TextField(
+                                    maxLength: 1,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (String text) {
+                                      setState(() {
+                                        numberOfSamples = text;
+                                      });
+                                    },
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      hintText: '1-9',
+                                      counterText: '',
+                                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.8)),
+                                      contentPadding: const EdgeInsets.all(0),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton.icon(
+                            style: ButtonStyle(
+                              side: MaterialStateProperty.all(BorderSide(
+                                  color: !validateSampleCommand() ? Colors.grey : Main.primaryColor).copyWith(width: 2)),
+                              backgroundColor: MaterialStateProperty.resolveWith((states) {
+                                if (states.isNotEmpty) {
+                                  if (MaterialState.hovered == states.first) {
+                                    return Colors.transparent;
+                                  }
+                                }
+                                return !validateSampleCommand() ? Colors.grey : Main.primaryColor.withOpacity(1.0);
+                              }),
+                            ),
+                            onPressed: !validateSampleCommand() ? null : () {
+                              setState(() {
+                                Command command = SampleCommand(locationType: LocationType.values[locationTypeIndex], sampleDepth: double.parse(sampleDepth),
+                                    sampleRadius: double.parse(sampleRadius), sampleType: SampleType.values[sampleTypeIndex], numberOfSamples: int.parse(numberOfSamples), createdAt: DateTime.now());
+                                command.onDeleted = () {
+                                  setState(() {
+                                    commands.remove(command);
+                                  });
+                                };
+                                addCommand(command);
+                              });
+                            },
+                            label: const Text("Add", style: TextStyle(color: Colors.white)),
+                            icon: const Icon(Icons.add, color: Colors.white),
                           ),
                         ],
                       ),
@@ -737,6 +895,56 @@ class CommandsPageState extends State<CommandsPage> {
   void addCommand(Command command) {
 
     commands.add(command);
+    if (processIndex == (commands.length - 1)) {
+      runCommand(command);
+    }
+
+  }
+
+  void runCommand(Command command) {
+
+    if (command is DelayCommand) {
+      ;
+    }
+
+  }
+
+  void deleteCommand(Command command) {
+
+    commands.remove(command);
+
+  }
+
+  bool validateSampleCommand() {
+
+    if (sampleTypeIndex == 1 && (sampleDepth.isEmpty || double.parse(sampleDepth) < 2)) {
+      return false;
+    }
+
+    if (locationTypeIndex == 1 && ((sampleRadius.isEmpty || double.parse(sampleRadius) < 2) || (numberOfSamples.isEmpty || double.parse(numberOfSamples) < 1))) {
+      return false;
+    }
+
+    return true;
+
+  }
+
+  bool validateWaypointCommand() {
+
+    if (!isNavigationGPS) {
+      if ((distanceFieldStr.isEmpty || double.parse(distanceFieldStr) < 10) || (directionalAngleFieldStr.isEmpty || double.parse(directionalAngleFieldStr) < 0 || double.parse(directionalAngleFieldStr) > 360)) {
+        return false;
+      }
+    } else {
+      if ((beginLongitudeFieldStr.isEmpty || double.parse(beginLongitudeFieldStr) < -180 || double.parse(beginLongitudeFieldStr) > 180) ||
+          (endLongitudeFieldStr.isEmpty || double.parse(endLongitudeFieldStr) < -180 || double.parse(endLongitudeFieldStr) > 180) ||
+          (beginLatitudeFieldStr.isEmpty || double.parse(beginLatitudeFieldStr) < -90 || double.parse(beginLatitudeFieldStr) > 90) ||
+          (endLatitudeFieldStr.isEmpty || double.parse(endLatitudeFieldStr) < -90 || double.parse(endLatitudeFieldStr) > 90)) {
+        return false;
+      }
+    }
+
+    return true;
 
   }
 
