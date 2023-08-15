@@ -41,7 +41,7 @@ class ShellPageState extends State<ShellPage> {
     }
   }
 
-  late Timer echoTimer;
+  Timer? echoTimer;
   int _counter = 0;
 
   String newName = "";
@@ -125,7 +125,9 @@ class ShellPageState extends State<ShellPage> {
   @override
   void dispose() {
     super.dispose();
-    echoTimer.cancel();
+    if (echoTimer != null) {
+      echoTimer!.cancel();
+    }
   }
 
   @override

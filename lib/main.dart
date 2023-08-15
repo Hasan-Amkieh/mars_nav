@@ -25,9 +25,9 @@ import 'package:ffi/ffi.dart';
 import 'dart:math' as math;
 
 enum RoverState {
-  offline("OFFLINE", Colors.blueGrey), standard("STANDARD MODE", Colors.green), autonomous("AUTONOMOUS MODE", Colors.yellow), halt("HALTED", Colors.red);
-  const RoverState(this.description, this.color);
-  final String description;
+  standard("STANDARD MODE", Colors.green), autonomous("AUTONOMOUS MODE", Colors.yellow), halt("HALTED", Colors.red), offline("OFFLINE", Colors.blueGrey);
+  const RoverState(this.name, this.color);
+  final String name;
   final Color color;
 }
 
@@ -58,6 +58,8 @@ class Main { // This class holds all the general variables to the interface as a
   static RoverState roverStatus = RoverState.standard; // holds the state of the rover
   static const double iconSize = 20.0;
   static const pageIndexToName = ["Sensory", "Imagery", "Samples", "History", "Commands", "Command Shell", "Settings"];
+
+  static SensorReadingSpeed sensorSpeed = SensorReadingSpeed.s0_5;
 
   // Battery in Rover:
   static double batteryLevel = 95;
@@ -267,10 +269,8 @@ class Home extends StatelessWidget {
                   children: [
                     if (!isSmallScreen) CustomSidebarX(controller: controller_),
                     Expanded(
-                      child: Center(
-                        child: MainNavigator(
-                          controller: controller_,
-                        ),
+                      child: MainNavigator(
+                        controller: controller_,
                       ),
                     ),
                   ],
@@ -472,7 +472,7 @@ class CustomSidebarX extends StatelessWidget {
                       visible: _controller.extended,
                       child: Flexible(
                         child: Text(
-                            Main.roverStatus.description,
+                            Main.roverStatus.name,
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
                         ),
                       ),

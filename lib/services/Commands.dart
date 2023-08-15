@@ -122,8 +122,27 @@ class DelayCommand extends Command {
     }
 
     if (startedAt != null) {
-      DateTime finAt = startedAt!.add(toWait);
-      msg += "\nends at ${finAt.day}/${finAt.month} ${finAt.hour}:${finAt.minute}:${finAt.second}";
+      Duration dur = Duration(milliseconds: startedAt!.add(toWait).millisecondsSinceEpoch - DateTime.now().millisecondsSinceEpoch);
+      hours = dur.inHours;
+      minutes = dur.inMinutes.remainder(60);
+      seconds = dur.inSeconds.remainder(60);
+
+      print(dur);
+
+      msg += '\n';
+      if (hours > 0) {
+        msg += " ${hours}h";
+      }
+      if (minutes > 0) {
+        msg += " ${minutes}m";
+      }
+      if (seconds > 0) {
+        msg += " ${seconds}s";
+      }
+
+      if (hours != 0 || minutes != 0 || seconds != 0) {
+        msg += " remains";
+      }
     }
     return msg;
   }
@@ -154,8 +173,7 @@ class SampleCommand extends Command {
   SampleCommand({required this.locationType, required this.sampleRadius, required this.numberOfSamples,
                 required this.sampleType, required this.sampleDepth, super.createdAt, super.onStarted, super.onFinished, super.onDeleted, super.index}) {
 
-    if (locationType == LocationType.inRadius) assert(validateSampleRadius(sampleRadius));
-    assert(validateNumberOfSamples(numberOfSamples));
+    if (locationType == LocationType.inRadius) { assert(validateNumberOfSamples(numberOfSamples) && validateSampleRadius(sampleRadius)); }
     if (sampleType == SampleType.rock) assert(validateSampleDepth(sampleDepth));
 
   }
@@ -169,11 +187,11 @@ class SampleCommand extends Command {
   String getDescription() {
     String msg = '';
     if (locationType == LocationType.inRadius) {
-      msg += "$numberOfSamples samples in radius of $sampleRadius cm\n";
+      msg += "$numberOfSamples samples in radius of $sampleRadius meters\n";
     }
 
     if (sampleType == SampleType.rock) {
-      msg += "$sampleDepth meters deep";
+      msg += "$sampleDepth cm deep";
     }
 
     return msg;

@@ -793,8 +793,9 @@ class CommandsPageState extends State<CommandsPage> {
                             ),
                             onPressed: !validateSampleCommand() ? null : () {
                               setState(() {
-                                Command command = SampleCommand(locationType: LocationType.values[locationTypeIndex], sampleDepth: double.parse(sampleDepth),
-                                    sampleRadius: double.parse(sampleRadius), sampleType: SampleType.values[sampleTypeIndex], numberOfSamples: int.parse(numberOfSamples), createdAt: DateTime.now());
+                                Command command = SampleCommand(locationType: LocationType.values[locationTypeIndex], sampleDepth: sampleDepth.isNotEmpty ? double.parse(sampleDepth) : 0,
+                                    sampleRadius: sampleRadius.isNotEmpty ? double.parse(sampleRadius) : 0, sampleType: SampleType.values[sampleTypeIndex],
+                                    numberOfSamples: numberOfSamples.isNotEmpty ? int.parse(numberOfSamples) : 0, createdAt: DateTime.now());
                                 command.onDeleted = () {
                                   setState(() {
                                     commands.remove(command);
@@ -904,14 +905,30 @@ class CommandsPageState extends State<CommandsPage> {
   void runCommand(Command command) {
 
     if (command is DelayCommand) {
-      ;
+      command.startedAt = DateTime.now();
+      delayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (DateTime.now().millisecondsSinceEpoch - (command.startedAt!.millisecondsSinceEpoch + command.toWait.inSeconds * 1000) >= 0) {
+          timer.cancel();
+          finishCommand(command);
+        } else {
+          setState(() {
+            ;
+          });
+        }
+      });
     }
 
   }
 
-  void deleteCommand(Command command) {
+  void finishCommand(Command command) {
 
-    commands.remove(command);
+    setState(() {
+      if (++processIndex == commands.length) {
+        ;
+      } else {
+        runCommand(commands[processIndex]);
+      }
+    });
 
   }
 

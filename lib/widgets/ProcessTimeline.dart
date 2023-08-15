@@ -130,20 +130,24 @@ class ProcessTimelinePageState extends State<ProcessTimelinePage> {
             padding: const EdgeInsets.only(top: 15.0),
             child: Column(
               children: [
-                Text(
-                  widget.commands[index].getTitle(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: getColor(index),
-                  ),
-                ),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Text(
-                      widget.commands[index].getDescription(),
-                      style: TextStyle(
-                        color: getColor(index),
-                      ),
+                    child: Column(
+                      children: [
+                        Text(
+                          widget.commands[index].getTitle(),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: getColor(index),
+                          ),
+                        ),
+                        Text(
+                          widget.commands[index].getDescription(),
+                          style: TextStyle(
+                            color: getColor(index),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
