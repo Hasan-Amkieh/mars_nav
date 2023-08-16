@@ -9,12 +9,15 @@
 #include <time.h>
 #include <fstream>
 #include <vector>
+#include <winreg.h>
 
 #ifdef WIN32
    #define EXPORT __declspec(dllexport)
 #else
    #define EXPORT extern "C" __attribute__((visibility("default"))) __attribute__((used))
 #endif
+
+#define MAX_PORTS 10
 
 using namespace std;
 
@@ -257,6 +260,50 @@ void maximizeWindow() {
 	if (windowHandle != nullptr) {
 		ShowWindow(windowHandle, SW_MAXIMIZE);
 	}
+}
+
+
+struct SerialPorts {
+	char*** portData;
+	int numOfPorts;
+};
+
+EXPORT
+struct SerialPorts* getSerialPorts() {
+    HKEY hKey;
+    LPCWSTR keyPath = L"HARDWARE\\DEVICEMAP\\SERIALCOMM";
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyPath, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        char valueName[256];
+        DWORD valueNameSize = sizeof(valueName);
+        char portName[256];
+        DWORD portNameSize = sizeof(portName);
+        DWORD index = 0;
+        int count = 0;
+
+        char*** portData = (char***)malloc(MAX_PORTS * sizeof(char**));
+
+        while (count < MAX_PORTS && RegEnumValueA(hKey, index, valueName, &valueNameSize, NULL, NULL, (LPBYTE)portName, &portNameSize) == ERROR_SUCCESS) {
+            portData[count] = (char**)malloc(2 * sizeof(char*));
+            portData[count][0] = (char*)malloc(portNameSize);
+            portData[count][1] = (char*)malloc(valueNameSize);
+
+            snprintf(portData[count][0], portNameSize + 1, "%s\0", portName);
+            snprintf(portData[count][1], valueNameSize + 1, "%s\0", valueName);
+            valueNameSize = sizeof(valueName);
+            portNameSize = sizeof(portName);
+            index++;
+            count++;
+        }
+
+        RegCloseKey(hKey);
+
+        struct SerialPorts* ports = new struct SerialPorts;
+        ports->portData = portData;
+        ports->numOfPorts = count;
+        return ports;
+    }
+
+    return NULL; // Error
 }
 
 /*

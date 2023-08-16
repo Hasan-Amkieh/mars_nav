@@ -34,6 +34,29 @@ enum RoverState {
 
 class Main { // This class holds all the general variables to the interface as a whole
 
+  static String convertMillisToDuration(int millis) {
+    int seconds = (millis / 1000).truncate();
+    int hours = seconds ~/ 3600;
+    int minutes = (seconds % 3600) ~/ 60;
+    seconds = seconds % 60;
+
+    String formattedTime = '';
+
+    if (hours > 0) {
+      formattedTime += '$hours' 'h ';
+    }
+    if (minutes > 0) {
+      formattedTime += '$minutes' 'm ';
+    }
+    if (seconds > 0 || formattedTime.isEmpty) {
+      formattedTime += '$seconds' 's';
+    }
+
+    return formattedTime.trim();
+  }
+
+  static DateTime roverStartTime = DateTime.now();
+
   // Theme Colors:
   static const primaryColor = Color(0xFF685BFF);
   static const canvasColor = Color(0xFF2E2E48);
@@ -50,6 +73,8 @@ class Main { // This class holds all the general variables to the interface as a
   static late String appDir;
   static late Process dbProcess;
   static bool windowCloseInit = false;
+  static bool decreasePageIndex = false;
+  static bool increasePageIndex = false;
 
   static const List<String> imageExtensions = ['jpg', '.peg', 'png', 'gif', 'bmp', 'avif', 'webp', 'jpeg'];
   static const List<String> videoExtensions = ['mp4', 'avi', 'mkv', 'mov', 'wmv'];
@@ -117,6 +142,7 @@ class Main { // This class holds all the general variables to the interface as a
   static late Function delArray;
   static late Function closeSerialPort;
   static late Function maximizeWindow;
+  static late Function getSerialPorts;
 
 }
 
@@ -126,11 +152,18 @@ final class CArray extends Struct {
   external int len;
 }
 
+final class CSerialPorts extends Struct {
+  external Pointer<Pointer<Pointer<Utf8>>> arr;
+  @Int32()
+  external int len;
+}
+
 void main(List<String> args) async {
 
   Main.appDir = (await getApplicationDocumentsDirectory()).path;
 
   // print("The args I received are: $args");
+
   Main.options = [];
   if (args.isNotEmpty) {
     Main.options = args; // The first two are ['multi_window', 1, json]
@@ -155,24 +188,25 @@ void main(List<String> args) async {
   }
 
 
-    Main.nativeApiLib = DynamicLibrary.open('api.dll');
-    Main.initSerialPort = Main.nativeApiLib.lookup<NativeFunction<Int Function(Pointer<Int8>)>>('initSerial').asFunction<int Function(Pointer<Int8>)>();
-    Main.readSerialPort = Main.nativeApiLib.lookup<NativeFunction<Pointer<CArray> Function(Int, Int, Int)>>('readSerialPort').asFunction<Pointer<CArray> Function(int, int, int)>();
-    Main.delArray = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<CArray>)>>('delArray').asFunction<void Function(Pointer<CArray>)>();
-    Main.closeSerialPort = Main.nativeApiLib.lookup<NativeFunction<Void Function(Int)>>('closeSerialPort').asFunction<void Function(int)>();
-    Main.maximizeWindow = Main.nativeApiLib.lookup<NativeFunction<Void Function()>>('maximizeWindow').asFunction<void Function()>();
+  Main.nativeApiLib = DynamicLibrary.open('api.dll');
+  Main.initSerialPort = Main.nativeApiLib.lookup<NativeFunction<Int Function(Pointer<Int8>)>>('initSerial').asFunction<int Function(Pointer<Int8>)>();
+  Main.readSerialPort = Main.nativeApiLib.lookup<NativeFunction<Pointer<CArray> Function(Int, Int, Int)>>('readSerialPort').asFunction<Pointer<CArray> Function(int, int, int)>();
+  Main.delArray = Main.nativeApiLib.lookup<NativeFunction<Void Function(Pointer<CArray>)>>('delArray').asFunction<void Function(Pointer<CArray>)>();
+  Main.closeSerialPort = Main.nativeApiLib.lookup<NativeFunction<Void Function(Int)>>('closeSerialPort').asFunction<void Function(int)>();
+  Main.maximizeWindow = Main.nativeApiLib.lookup<NativeFunction<Void Function()>>('maximizeWindow').asFunction<void Function()>();
+  Main.getSerialPorts = Main.nativeApiLib.lookup<NativeFunction<Pointer<CSerialPorts> Function()>>('getSerialPorts').asFunction<Pointer<CSerialPorts> Function()>();
 
-    Directory directory = Directory(Main.appDir + r"\mars_nav");
+  Directory directory = Directory(Main.appDir + r"\mars_nav");
 
+  if (!directory.existsSync()) {
+    directory.createSync();
+    Directory(Main.appDir + r"\mars_nav\imagery").createSync();
+  } else {
+    directory = Directory(Main.appDir + r"\mars_nav\imagery");
     if (!directory.existsSync()) {
       directory.createSync();
-      Directory(Main.appDir + r"\mars_nav\imagery").createSync();
-    } else {
-      directory = Directory(Main.appDir + r"\mars_nav\imagery");
-      if (!directory.existsSync()) {
-        directory.createSync();
-      }
     }
+  }
 
   // const portName = "COM6";
   // final Pointer<Int8> nativeString = calloc<Int8>(portName.length + 1);
@@ -195,9 +229,9 @@ void main(List<String> args) async {
   //   print("ERROR opening COM3!");
   // }
 
-    initMeeduPlayer();
+  initMeeduPlayer();
 
-    runApp(Home());
+  runApp(Home());
 }
 
 class Home extends StatelessWidget {
@@ -285,17 +319,31 @@ class Home extends StatelessWidget {
 
 }
 
-class CustomSidebarX extends StatelessWidget {
-  const CustomSidebarX({
+class CustomSidebarX extends StatefulWidget {
+  CustomSidebarX({
     Key? key,
     required SidebarXController controller,
-  })  : _controller = controller,
+  })
+      : _controller = controller,
         super(key: key);
 
   final SidebarXController _controller;
 
+  static Function(Function())? setState;
+
+  @override
+  State<StatefulWidget> createState() {
+    return CustomSidebarXState();
+  }
+
+}
+
+class CustomSidebarXState extends State<CustomSidebarX> {
+
   @override
   Widget build(BuildContext context) {
+    CustomSidebarX.setState = setState;
+
     List<SidebarXItem> bars = [];
     if (Main.roverStatus == RoverState.autonomous) {
       bars.addAll([
@@ -359,10 +407,10 @@ class CustomSidebarX extends StatelessWidget {
 
     return MouseRegion(
       onEnter: (event) {
-        _controller.toggleExtended();
+        widget._controller.toggleExtended();
       },
       onExit: (event) {
-        _controller.toggleExtended();
+        widget._controller.toggleExtended();
       },
       child: SidebarX(
         headerDivider: Column(
@@ -375,7 +423,7 @@ class CustomSidebarX extends StatelessWidget {
           ],
         ),
         animationDuration: const Duration(milliseconds: 100),
-        controller: _controller,
+        controller: widget._controller,
         showToggleButton: false,
         theme: SidebarXTheme(
           margin: const EdgeInsets.all(10),
@@ -431,8 +479,8 @@ class CustomSidebarX extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Visibility(visible: _controller.extended, child: Flexible(child: Text("${Main.batteryLevel}%", style: const TextStyle(fontSize: 16, color: Colors.white)))),
-                    Visibility(visible: _controller.extended, child: const SizedBox(width: 10)),
+                    Visibility(visible: widget._controller.extended, child: Flexible(child: Text("${Main.batteryLevel}%", style: const TextStyle(fontSize: 16, color: Colors.white)))),
+                    Visibility(visible: widget._controller.extended, child: const SizedBox(width: 10)),
                     Stack(
                       alignment: Alignment.center,
                       children: [
@@ -446,8 +494,8 @@ class CustomSidebarX extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Visibility(visible: _controller.extended, child: Text(Main.roverBatteryRemainingTime, style: const TextStyle(color: Colors.white))),
-                Visibility(visible: _controller.extended, child: const SizedBox(height: 12)),
+                Visibility(visible: widget._controller.extended, child: Text(Main.roverBatteryRemainingTime, style: const TextStyle(color: Colors.white))),
+                Visibility(visible: widget._controller.extended, child: const SizedBox(height: 12)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -465,11 +513,11 @@ class CustomSidebarX extends StatelessWidget {
                         )
                     ),
                     Visibility(
-                        visible: _controller.extended,
+                        visible: widget._controller.extended,
                         child: const SizedBox(width: 12)
                     ),
                     Visibility(
-                      visible: _controller.extended,
+                      visible: widget._controller.extended,
                       child: Flexible(
                         child: Text(
                             Main.roverStatus.name,
@@ -489,7 +537,7 @@ class CustomSidebarX extends StatelessWidget {
   }
 }
 
-class MainNavigator extends StatelessWidget {
+class MainNavigator extends StatefulWidget {
   const MainNavigator({
     Key? key,
     required this.controller,
@@ -498,13 +546,29 @@ class MainNavigator extends StatelessWidget {
   final SidebarXController controller;
 
   @override
+  State<StatefulWidget> createState() {
+    return MainNavigatorState();
+  }
+
+}
+
+class MainNavigatorState extends State<MainNavigator> {
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AnimatedBuilder(
-      animation: controller,
+      animation: widget.controller,
       builder: (context, child) {
+        if (Main.decreasePageIndex) {
+          Main.decreasePageIndex = false;
+          widget.controller.selectIndex(widget.controller.selectedIndex - 1);
+        } else if (Main.increasePageIndex) {
+          Main.increasePageIndex = false;
+          widget.controller.selectIndex(widget.controller.selectedIndex + 1);
+        }
         if (Main.roverStatus == RoverState.autonomous) {
-          switch (controller.selectedIndex) {
+          switch (widget.controller.selectedIndex) {
             case 0:
               return SensoryPage();
             case 1:
@@ -524,7 +588,7 @@ class MainNavigator extends StatelessWidget {
               );
           }
         } else {
-          switch (controller.selectedIndex) {
+          switch (widget.controller.selectedIndex) {
             case 0:
               return SensoryPage();
             case 1:

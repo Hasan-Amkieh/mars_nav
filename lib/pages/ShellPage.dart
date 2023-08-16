@@ -20,9 +20,8 @@ class ShellPageState extends State<ShellPage> {
   @override
   void initState() {
     super.initState();
+    echoTimer ??= Timer.periodic(const Duration(milliseconds: 50), echoLoop);
     if (controllers.isEmpty) {
-      echoTimer = Timer.periodic(const Duration(milliseconds: 50), echoLoop);
-
       controllers.add(Console(controller: FlutterConsoleController(), name: "Console 0"));
       tabs.add(FlutterConsole(controller: controllers.first.controller, height: widget.height, width: widget.width));
     }
