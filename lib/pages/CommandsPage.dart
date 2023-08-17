@@ -54,6 +54,7 @@ class CommandsPageState extends State<CommandsPage> {
   String directionalAngleFieldStr = '';
   bool isNavigationGPS = false;
   List<DirectionalVector> navCommandWaypoints = [];
+  GPSLocation? lastGPSLoc;
 
   int sampleTypeIndex = 0;
   int locationTypeIndex = 0;
@@ -112,9 +113,16 @@ class CommandsPageState extends State<CommandsPage> {
               onPressed: !validateWaypointCommand() ? null : () {
                 setState(() {
                   if (isNavigationGPS) {
-                    navCommandWaypoints.add(GPSLocation.toDirectionalVector(
-                        GPSLocation(latitude: double.parse(beginLatitudeFieldStr), longitude: double.parse(beginLongitudeFieldStr)),
-                        GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr))));
+                    if (lastGPSLoc == null) {
+                      navCommandWaypoints.add(GPSLocation.toDirectionalVector(
+                          GPSLocation(latitude: double.parse(beginLatitudeFieldStr), longitude: double.parse(beginLongitudeFieldStr)),
+                          GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr))));
+                    } else {
+                      navCommandWaypoints.add(GPSLocation.toDirectionalVector(
+                          lastGPSLoc!,
+                          GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr))));
+                    }
+                    lastGPSLoc = GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr));
                   } else {
                     navCommandWaypoints.add(DirectionalVector(distance: double.parse(distanceFieldStr), compassAngle: double.parse(directionalAngleFieldStr)));
                   }
@@ -404,7 +412,7 @@ class CommandsPageState extends State<CommandsPage> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Camera", style: TextStyle(color: Colors.white)),
+                                    const Text("Camera", style: TextStyle(color: Colors.white)),
                                     TextButton(
                                       child: Text(RoverCameras.values[roverCameraIndex].name, style: TextStyle(color: Main.primaryColor)),
                                       onPressed: () {
@@ -459,7 +467,7 @@ class CommandsPageState extends State<CommandsPage> {
                     children: [
                       CommandContainer(
                         width: MediaQuery.of(context).size.width * 0.42,
-                        height: isNavigationGPS && navCommandWaypoints.isEmpty ? 500 : 330,
+                        height: isNavigationGPS && lastGPSLoc == null ? 500 : 330,
                         iconWidget: Image.asset("lib/assets/icons/navigate-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
                         titleWidget: Text("Navigation", style: commandContainerStyle),
                         detailsWidget: TextButton.icon(
@@ -473,7 +481,7 @@ class CommandsPageState extends State<CommandsPage> {
                         ),
                         contents: isNavigationGPS ? [
                           Visibility(
-                            visible: navCommandWaypoints.isEmpty,
+                            visible: lastGPSLoc == null,
                             child: Column(
                               children: [
                                 const Text("CURRENT LOCATION", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -953,11 +961,18 @@ class CommandsPageState extends State<CommandsPage> {
         return false;
       }
     } else {
-      if ((beginLongitudeFieldStr.isEmpty || double.parse(beginLongitudeFieldStr) < -180 || double.parse(beginLongitudeFieldStr) > 180) ||
-          (endLongitudeFieldStr.isEmpty || double.parse(endLongitudeFieldStr) < -180 || double.parse(endLongitudeFieldStr) > 180) ||
-          (beginLatitudeFieldStr.isEmpty || double.parse(beginLatitudeFieldStr) < -90 || double.parse(beginLatitudeFieldStr) > 90) ||
-          (endLatitudeFieldStr.isEmpty || double.parse(endLatitudeFieldStr) < -90 || double.parse(endLatitudeFieldStr) > 90)) {
-        return false;
+      if (lastGPSLoc == null) {
+        if ((beginLongitudeFieldStr.isEmpty || double.parse(beginLongitudeFieldStr) < -180 || double.parse(beginLongitudeFieldStr) > 180) ||
+            (endLongitudeFieldStr.isEmpty || double.parse(endLongitudeFieldStr) < -180 || double.parse(endLongitudeFieldStr) > 180) ||
+            (beginLatitudeFieldStr.isEmpty || double.parse(beginLatitudeFieldStr) < -90 || double.parse(beginLatitudeFieldStr) > 90) ||
+            (endLatitudeFieldStr.isEmpty || double.parse(endLatitudeFieldStr) < -90 || double.parse(endLatitudeFieldStr) > 90)) {
+          return false;
+        }
+      } else {
+        if ((endLongitudeFieldStr.isEmpty || double.parse(endLongitudeFieldStr) < -180 || double.parse(endLongitudeFieldStr) > 180) ||
+            (endLatitudeFieldStr.isEmpty || double.parse(endLatitudeFieldStr) < -90 || double.parse(endLatitudeFieldStr) > 90)) {
+          return false;
+        }
       }
     }
 

@@ -347,6 +347,8 @@ class DirectionalVector {
 
   DirectionalVector({required this.distance, required this.compassAngle}) {
 
+    print("$distance $compassAngle");
+
     assert(validateDirectionalAngle(compassAngle) && validateDistance(distance));
 
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ffi';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -32,8 +33,13 @@ class SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
 
+    timer ??= Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {});
+    });
     _updateSerialPorts();
   }
+
+  Timer? timer;
 
   static const titleStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18);
   static const descriptionStyle = TextStyle(color: Colors.white);
@@ -487,6 +493,14 @@ class SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (timer != null) {
+      timer!.cancel();
+    }
   }
 
   List<int> createIntegerList(int stop) {
