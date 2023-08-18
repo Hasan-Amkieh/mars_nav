@@ -94,7 +94,7 @@ class NavigationCommand extends Command {
 class DelayCommand extends Command {
 
   Duration toWait;
-  DateTime? startedAt;
+  Duration? timePassed;
 
   DelayCommand({required this.toWait, super.createdAt, super.onStarted, super.onFinished, super.onDeleted, super.index});
 
@@ -121,13 +121,11 @@ class DelayCommand extends Command {
       msg += " ${seconds}s";
     }
 
-    if (startedAt != null) {
-      Duration dur = Duration(milliseconds: startedAt!.add(toWait).millisecondsSinceEpoch - DateTime.now().millisecondsSinceEpoch);
+    if (timePassed != null) {
+      Duration dur = Duration(seconds: toWait.inSeconds - timePassed!.inSeconds);
       hours = dur.inHours;
       minutes = dur.inMinutes.remainder(60);
       seconds = dur.inSeconds.remainder(60);
-
-      print(dur);
 
       msg += '\n';
       if (hours > 0) {
@@ -140,7 +138,7 @@ class DelayCommand extends Command {
         msg += " ${seconds}s";
       }
 
-      if (hours != 0 || minutes != 0 || seconds != 0) {
+      if (hours > 0 || minutes > 0 || seconds > 0) {
         msg += " remains";
       }
     }

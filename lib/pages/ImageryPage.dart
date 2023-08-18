@@ -70,35 +70,44 @@ class ImageryPageState extends State {
   }
 
   static List<GalleryContainer> galleryWidgets = [];
+  List<GalleryContainer> galleryWidgetsSearched = [];
+
+  bool galleryLock = false;
 
   Future<void> fetchGalleryWidgets() async {
 
-    galleryWidgets = [];
+    if (!galleryLock) {
+      galleryLock = true;
 
-    Directory dir = Directory(Main.appDir + r'\mars_nav\imagery');
-    for (FileSystemEntity file in dir.listSync()) {
-      if (file is File) {
-        String fileNameFull = file.path.split('\\').last;
-        List<String> fileNameSegments = fileNameFull.split("_");
-        String fileName = fileNameSegments.last.split(".").first;
-        GalleryType galleryType = classifyFile(fileNameFull);
-        GallerySource gallerySource = classifySource(fileNameSegments[1]);
-        DateTime time = DateTime.parse(fileNameSegments[0].replaceAll(".", ":"));
+      galleryWidgets = [];
 
-        Thumbnail? thumb;
-        if (galleryType == GalleryType.video) {
-          try {
-            thumb = await generateThumbnail(filePath: file.path, position: 0.0);
-          } on PlatformException catch (e) {
-            debugPrint('Failed to generate thumbnail: ${e.message}');
-          } catch (e) {
-            debugPrint('Failed to generate thumbnail: ${e.toString()}');
+      Directory dir = Directory(Main.appDir + r'\mars_nav\imagery');
+      for (FileSystemEntity file in dir.listSync()) {
+        if (file is File) {
+          String fileNameFull = file.path.split('\\').last;
+          List<String> fileNameSegments = fileNameFull.split("_");
+          String fileName = fileNameSegments.last.split(".").first;
+          GalleryType galleryType = classifyFile(fileNameFull);
+          GallerySource gallerySource = classifySource(fileNameSegments[1]);
+          DateTime time = DateTime.parse(fileNameSegments[0].replaceAll(".", ":"));
+
+          Thumbnail? thumb;
+          if (galleryType == GalleryType.video) {
+            try {
+              thumb = await generateThumbnail(filePath: file.path, position: 0.0);
+            } on PlatformException catch (e) {
+              debugPrint('Failed to generate thumbnail: ${e.message}');
+            } catch (e) {
+              debugPrint('Failed to generate thumbnail: ${e.toString()}');
+            }
           }
-        }
-        GalleryEntity entity = GalleryEntity(fileName: fileName, source: gallerySource, time: time, type: galleryType, fullFileName: file.path, );
+          GalleryEntity entity = GalleryEntity(fileName: fileName, source: gallerySource, time: time, type: galleryType, fullFileName: file.path, );
 
-        galleryWidgets.add(GalleryContainer(entity: entity, thumb: thumb));
+          galleryWidgets.add(GalleryContainer(entity: entity, thumb: thumb));
+        }
       }
+
+      galleryLock = false;
     }
 
   }
@@ -112,6 +121,15 @@ class ImageryPageState extends State {
 
   @override
   Widget build(BuildContext context) {
+
+    if (searchText.isNotEmpty) {
+      galleryWidgetsSearched = galleryWidgets.where((widget) {
+        return widget.entity.fileName.contains(searchText);
+      }).toList();
+    } else {
+      galleryWidgetsSearched = galleryWidgets;
+    }
+
     return FutureBuilder(
       future: fetchGalleryWidgets(),
       builder: (context, snapshot) {
@@ -219,7 +237,7 @@ class ImageryPageState extends State {
                             spacing: 24,
                             runSpacing: 24,
                             children: [
-                              ...galleryWidgets.where((element) {
+                              ...galleryWidgetsSearched.where((element) {
                                 if (!isImageOn && !isCameraOn) {
                                   if (isDroneOn) {
                                     return element.entity.source == GallerySource.drone;

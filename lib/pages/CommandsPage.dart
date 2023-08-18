@@ -125,6 +125,7 @@ class CommandsPageState extends State<CommandsPage> {
                     lastGPSLoc = GPSLocation(latitude: double.parse(endLatitudeFieldStr), longitude: double.parse(endLongitudeFieldStr));
                   } else {
                     navCommandWaypoints.add(DirectionalVector(distance: double.parse(distanceFieldStr), compassAngle: double.parse(directionalAngleFieldStr)));
+                    lastGPSLoc = null;
                   }
                 });
               },
@@ -834,10 +835,15 @@ class CommandsPageState extends State<CommandsPage> {
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.green.withOpacity(0.2)),
                     ),
-                    label: Text("Resume", style: TextStyle(color: commands.isEmpty ? Colors.grey : Colors.green)),
-                    icon: Icon(Icons.play_arrow, color: commands.isEmpty ? Colors.grey : Colors.green),
-                    onPressed: commands.isEmpty ? null : () {
-                      ;
+                    label: Text("Resume", style: TextStyle(color: commands.isEmpty || !isPaused ? Colors.grey : Colors.green)),
+                    icon: Icon(Icons.play_arrow, color: commands.isEmpty || !isPaused ? Colors.grey : Colors.green),
+                    onPressed: commands.isEmpty || !isPaused ? null : () {
+                      setState(() {
+                        isPaused = false;
+                        if (processIndex < commands.length) {
+                          runCommand(commands[processIndex]);
+                        }
+                      });
                     },
                   ),
                   const SizedBox(width: 18),
@@ -845,10 +851,15 @@ class CommandsPageState extends State<CommandsPage> {
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.red.withOpacity(0.2)),
                     ),
-                    label: Text("Pause", style: TextStyle(color: commands.isEmpty ? Colors.grey : Colors.red)),
-                    icon: Icon(Icons.pause, color: commands.isEmpty ? Colors.grey : Colors.red),
-                    onPressed: commands.isEmpty ? null : () {
-                      ;
+                    label: Text("Pause", style: TextStyle(color: commands.isEmpty || isPaused ? Colors.grey : Colors.red)),
+                    icon: Icon(Icons.pause, color: commands.isEmpty || isPaused ? Colors.grey : Colors.red),
+                    onPressed: commands.isEmpty || isPaused ? null : () {
+                      setState(() {
+                        isPaused = true;
+                        if (processIndex < commands.length) {
+                          pauseCommand(commands[processIndex]);
+                        }
+                      });
                     },
                   ),
                   const SizedBox(width: 18),
@@ -905,7 +916,9 @@ class CommandsPageState extends State<CommandsPage> {
 
     commands.add(command);
     if (processIndex == (commands.length - 1)) {
-      runCommand(command);
+      if (!isPaused) {
+        runCommand(command);
+      }
     }
 
   }
@@ -913,9 +926,10 @@ class CommandsPageState extends State<CommandsPage> {
   void runCommand(Command command) {
 
     if (command is DelayCommand) {
-      command.startedAt = DateTime.now();
+      command.timePassed ??= const Duration(seconds: 0);
       delayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (DateTime.now().millisecondsSinceEpoch - (command.startedAt!.millisecondsSinceEpoch + command.toWait.inSeconds * 1000) >= 0) {
+        command.timePassed = Duration(seconds: command.timePassed!.inSeconds + 1);
+        if (command.toWait.inSeconds - command.timePassed!.inSeconds <= 0) {
           timer.cancel();
           finishCommand(command);
         } else {
@@ -928,13 +942,28 @@ class CommandsPageState extends State<CommandsPage> {
 
   }
 
+  DateTime? pausedAt;
+  Duration? delayCommandPassed;
+
+  void pauseCommand(Command command) {
+
+    pausedAt = DateTime.now();
+
+    if (command is DelayCommand) {
+      delayTimer?.cancel();
+    }
+
+  }
+
   void finishCommand(Command command) {
 
     setState(() {
       if (++processIndex == commands.length) {
         ;
       } else {
-        runCommand(commands[processIndex]);
+        if (!isPaused) {
+          runCommand(commands[processIndex]);
+        }
       }
     });
 
