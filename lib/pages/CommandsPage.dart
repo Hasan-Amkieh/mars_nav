@@ -332,7 +332,9 @@ class CommandsPageState extends State<CommandsPage> {
                                     children: [
                                       const Text("Resolution", style: TextStyle(color: Colors.white)),
                                       TextButton(
-                                        child: Text("${RoverCameraResolution.values[roverCameraResIndex].width}x${RoverCameraResolution.values[roverCameraResIndex].height}"),
+                                        child: Text(
+                                            "${RoverCameraResolution.values[roverCameraResIndex].width}x${RoverCameraResolution.values[roverCameraResIndex].height}",
+                                            style: TextStyle(color: Main.primaryColor)),
                                         onPressed: () {
                                           setState(() {
                                             if (++roverCameraResIndex == 3) {
@@ -469,7 +471,7 @@ class CommandsPageState extends State<CommandsPage> {
                       CommandContainer(
                         width: MediaQuery.of(context).size.width * 0.42,
                         height: isNavigationGPS && lastGPSLoc == null ? 500 : 330,
-                        iconWidget: Image.asset("lib/assets/icons/navigate-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                        iconWidget: Image.asset("lib/assets/icons/navigate.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                         titleWidget: Text("Navigation", style: commandContainerStyle),
                         detailsWidget: TextButton.icon(
                           label: Text(isNavigationGPS ? "GPS" : "Vector", style: const TextStyle(color: Main.primaryColor)),
@@ -667,10 +669,10 @@ class CommandsPageState extends State<CommandsPage> {
                         height: 300,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         titleWidget: Text("Sample Collection", style: commandContainerStyle),
-                        iconWidget: Image.asset("lib/assets/icons/shovel-white.png", width: Main.iconSize * 1.8, height: Main.iconSize * 1.8),
+                        iconWidget: Image.asset("lib/assets/icons/shovel.png", color: Colors.white, width: Main.iconSize * 1.8, height: Main.iconSize * 1.8),
                         detailsWidget: TextButton.icon(
                           label: Text(SampleType.values[sampleTypeIndex].name, style: const TextStyle(color: Main.primaryColor)),
-                          icon: Image.asset("lib/assets/icons/${sampleTypeIndex == 0 ? "sand" : "drill"}-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                          icon: Image.asset("lib/assets/icons/${sampleTypeIndex == 0 ? "sand" : "drill"}.png", color: Main.primaryColor, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                           onPressed: () {
                             setState(() {
                               if (++sampleTypeIndex == 2) {
@@ -716,7 +718,7 @@ class CommandsPageState extends State<CommandsPage> {
                               const Text("Extraction Location", style: TextStyle(color: Colors.white)),
                               TextButton.icon(
                                 label: Text(LocationType.values[locationTypeIndex].name, style: const TextStyle(color: Main.primaryColor)),
-                                icon: Image.asset("lib/assets/icons/${locationTypeIndex == 0 ? "current-location" : "radius"}-blue.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                icon: Image.asset("lib/assets/icons/${locationTypeIndex == 0 ? "current-location" : "radius"}.png", color: Main.primaryColor, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                                 onPressed: () {
                                   setState(() {
                                     if (++locationTypeIndex == 2) {

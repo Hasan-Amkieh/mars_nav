@@ -52,17 +52,7 @@ class NavigationCommand extends Command {
   
   @override
   Widget resolveIcon(Color color) {
-
-    String colorStr;
-    if (color == const Color(0xffd1d2d7)) {
-      colorStr = "white";
-    } else if (color == const Color(0xff5ec792)) {
-      colorStr = "progress";
-    } else {
-      colorStr = "complete";
-    }
-
-    return Image.asset("lib/assets/icons/navigate-$colorStr.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
+    return Image.asset("lib/assets/icons/navigate.png", color: color, width: Main.iconSize * 2, height: Main.iconSize * 2);
   }
 
   static String getDirectionExpressionFromAngle(double angle) {
@@ -197,16 +187,8 @@ class SampleCommand extends Command {
 
   @override
   Widget resolveIcon(Color color) {
-    String colorStr;
-    if (color == const Color(0xffd1d2d7)) {
-      colorStr = "white";
-    } else if (color == const Color(0xff5ec792)) {
-      colorStr = "progress";
-    } else {
-      colorStr = "complete";
-    }
 
-    return Image.asset("lib/assets/icons/${sampleType == SampleType.debris ? "sand" : "drill"}-$colorStr.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
+    return Image.asset("lib/assets/icons/${sampleType == SampleType.debris ? "sand" : "drill"}.png", color: color, width: Main.iconSize * 2, height: Main.iconSize * 2);
   }
 
   static bool validateSampleRadius(double radius) {
@@ -315,7 +297,7 @@ class DroneCommand extends Command {
 
   @override
   Widget resolveIcon(Color color) {
-    return Image.asset("lib/assets/icons/drone-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2);
+    return Image.asset("lib/assets/icons/drone.png", color: color, width: Main.iconSize * 2, height: Main.iconSize * 2);
   }
 
   @override

@@ -303,7 +303,9 @@ struct SerialPorts* getSerialPorts() {
         return ports;
     }
 
-    return NULL; // Error
+    struct SerialPorts* ports = new struct SerialPorts;
+    ports->numOfPorts = 0;
+    return ports;
 }
 
 /*

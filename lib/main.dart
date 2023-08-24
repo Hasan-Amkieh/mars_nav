@@ -348,58 +348,58 @@ class CustomSidebarXState extends State<CustomSidebarX> {
     if (Main.roverStatus == RoverState.autonomous) {
       bars.addAll([
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/sensorial-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/sensorial.png", color: Colors.white, height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[0],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/samples-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
+          iconWidget: Image.asset("lib/assets/icons/samples.png", color: Colors.white,height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[2],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/history-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/history.png", color: Colors.white,height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[3],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/commands-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
+          iconWidget: Image.asset("lib/assets/icons/commands.png", color: Colors.white,height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[4],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/command-shell-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/command-shell.png", color: Colors.white,height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[5],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/settings-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/settings.png", color: Colors.white,height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[6],
         ),
       ]);
     } else {
       bars.addAll([
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/sensorial-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/sensorial.png", color: Colors.white,height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[0],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/imagery-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/imagery.png", color: Colors.white,height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[1],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/samples-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
+          iconWidget: Image.asset("lib/assets/icons/samples.png", color: Colors.white,height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[2],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/history-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/history.png", color: Colors.white,height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[3],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/commands-white.png", height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
+          iconWidget: Image.asset("lib/assets/icons/commands.png", color: Colors.white,height: Main.iconSize * 1.5, width: Main.iconSize * 1.5),
           label: Main.pageIndexToName[4],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/command-shell-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/command-shell.png", color: Colors.white,height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[5],
         ),
         SidebarXItem(
-          iconWidget: Image.asset("lib/assets/icons/settings-white.png", height: Main.iconSize, width: Main.iconSize),
+          iconWidget: Image.asset("lib/assets/icons/settings.png", color: Colors.white, height: Main.iconSize, width: Main.iconSize),
           label: Main.pageIndexToName[6],
         ),
       ]);

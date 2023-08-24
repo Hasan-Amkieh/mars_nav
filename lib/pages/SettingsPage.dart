@@ -104,7 +104,7 @@ class SettingsPageState extends State<SettingsPage> {
                     children: [
                       Row(
                         children: [
-                          Image.asset("lib/assets/icons/rover-white.png", width: Main.iconSize * 1.8, height: Main.iconSize * 1.8),
+                          Image.asset("lib/assets/icons/rover.png", color: Colors.white, width: Main.iconSize * 1.8, height: Main.iconSize * 1.8),
                           titleIconSeparator,
                           const Text("General", style: titleStyle),
                         ],
@@ -254,7 +254,7 @@ class SettingsPageState extends State<SettingsPage> {
                   children: [
                     Row(
                       children: [
-                        Image.asset("lib/assets/icons/robotic-arm-white.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                        Image.asset("lib/assets/icons/robotic-arm.png", color: Colors.white, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                         const SizedBox(width: 8),
                         const Text("Arm Controller", style: TextStyle(color: Colors.white)),
                       ],
@@ -332,12 +332,26 @@ class SettingsPageState extends State<SettingsPage> {
                             });
                           },
                         ),
+                        const SizedBox(width: 12),
+                        TextButton.icon(
+                          style: ButtonStyle(
+                            overlayColor: MaterialStateProperty.all(Colors.green.withOpacity(0.2)),
+                            padding: MaterialStateProperty.all(EdgeInsets.zero),
+                          ),
+                          label: Text("CONNECT", style: TextStyle(color: Colors.green)),
+                          icon: Image.asset("lib/assets/icons/connect-usb.png", color: Colors.green, width: Main.iconSize * 1.8, height: Main.iconSize * 1.8),
+                          onPressed: () {
+                            setState(() {
+                              _updateSerialPorts();
+                            });
+                          },
+                        ),
                       ],
                     ),
                     const SizedBox(height: 40),
                     Row(
                       children: [
-                        Image.asset("lib/assets/icons/rover-white.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                        Image.asset("lib/assets/icons/rover.png", color: Colors.white, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                         const SizedBox(width: 8),
                         const Text("Rover Controller", style: TextStyle(color: Colors.white)),
                       ],

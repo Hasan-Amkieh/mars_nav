@@ -1,6 +1,5 @@
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_window_close/flutter_window_close.dart';
 import 'package:gauge_indicator/gauge_indicator.dart';
 import 'package:mars_nav/widgets/AngleGauge.dart';
 import 'package:mars_nav/widgets/GraphContainer.dart';
@@ -207,7 +206,7 @@ class SensoryPageState extends State<SensoryPage> {
                     icon: Icon(Icons.picture_in_picture, color: Theme.of(context).primaryColor),
                     onPressed: () {},
                   ),
-                  iconWidget: Image.asset("lib/assets/icons/wind-white.png", height: Main.iconSize * 2, width: Main.iconSize * 2),
+                  iconWidget: Image.asset("lib/assets/icons/wind.png", color: Colors.white, height: Main.iconSize * 2, width: Main.iconSize * 2),
                   titleWidget: Text("Atmosphere", style: graphContainerStyle),
                   graph: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -220,7 +219,7 @@ class SensoryPageState extends State<SensoryPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Image.asset("lib/assets/icons/water-blue.png", height: Main.iconSize * 1 , width: Main.iconSize * 1),
+                              Image.asset("lib/assets/icons/water.png", height: Main.iconSize * 1 , width: Main.iconSize * 1),
                               const SizedBox(width: 10,),
                               Text("Humidity ${Main.humidity}%", style: const TextStyle(color: Colors.white)),
                             ],
@@ -228,7 +227,7 @@ class SensoryPageState extends State<SensoryPage> {
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              Image.asset("lib/assets/icons/temperature-red.png", height: Main.iconSize * 1, width: Main.iconSize * 1),
+                              Image.asset("lib/assets/icons/temperature.png", color: Colors.red, height: Main.iconSize * 1, width: Main.iconSize * 1),
                               const SizedBox(width: 10,),
                               Text("Temperature ${Main.temperature} C°", style: const TextStyle(color: Colors.white)),
                             ],
@@ -236,7 +235,7 @@ class SensoryPageState extends State<SensoryPage> {
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              Image.asset("lib/assets/icons/air-pressure-green.png", height: Main.iconSize * 1, width: Main.iconSize * 1),
+                              Image.asset("lib/assets/icons/air-pressure.png", color: Colors.green, height: Main.iconSize * 1, width: Main.iconSize * 1),
                               const SizedBox(width: 10,),
                               Text("Air Pressure ${Main.airPressure} millibar", style: const TextStyle(color: Colors.white)),
                             ],
@@ -326,7 +325,7 @@ class SensoryPageState extends State<SensoryPage> {
                   ),
                   sizeModifier: 1.5,
                   titleWidget: Text("Speed", style: graphContainerStyle),
-                  iconWidget: Image.asset("lib/assets/icons/speed-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  iconWidget: Image.asset("lib/assets/icons/speed.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                   graph: Column(
                     children: [
                       const SizedBox(height: 12,),
@@ -367,7 +366,7 @@ class SensoryPageState extends State<SensoryPage> {
                   ),
                   sizeModifier: 1.5,
                   titleWidget: Text("Compass", style: graphContainerStyle),
-                  iconWidget: Image.asset("lib/assets/icons/compass-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  iconWidget: Image.asset("lib/assets/icons/compass.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                   graph: Column(
                     children: [
                       const SizedBox(height: 12,),
@@ -388,7 +387,7 @@ class SensoryPageState extends State<SensoryPage> {
                   ),
                   sizeModifier: 1.0,
                   titleWidget: Text("Rover Angles", style: graphContainerStyle),
-                  iconWidget: Image.asset("lib/assets/icons/angles-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  iconWidget: Image.asset("lib/assets/icons/angles.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                   graph: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -419,7 +418,7 @@ class SensoryPageState extends State<SensoryPage> {
                   ),
                   sizeModifier: 1.9,
                   titleWidget: Text("Air Particles", style: graphContainerStyle),
-                  iconWidget: Image.asset("lib/assets/icons/particles-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                  iconWidget: Image.asset("lib/assets/icons/particles.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                   graph: SfCartesianChart(
                     tooltipBehavior: TooltipBehavior(
                       enable: true,
@@ -536,7 +535,7 @@ class SensoryPageState extends State<SensoryPage> {
                         print("exit code: $x");
                       },
                     ),
-                    iconWidget: Image.asset("lib/assets/icons/circuitry-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                    iconWidget: Image.asset("lib/assets/icons/circuitry.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                     titleWidget: Text("Computing Resources", style: graphContainerStyle),
                     sizeModifier: 1.2,
                     graph: GestureDetector(
@@ -655,7 +654,7 @@ class SensoryPageState extends State<SensoryPage> {
                 Flexible(
                   flex: 4,
                   child: GraphContainer(
-                    iconWidget: Image.asset("lib/assets/icons/bolts-white.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    iconWidget: Image.asset("lib/assets/icons/bolts.png", color: Colors.white, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                     titleWidget: Text("Power Consumption", style: graphContainerStyle),
                     detailsWidget: IconButton(
                       icon: Icon(Icons.picture_in_picture, color: Theme.of(context).primaryColor),
@@ -800,7 +799,7 @@ class SensoryPageState extends State<SensoryPage> {
                 Flexible(
                   flex: 3,
                   child: GraphContainer(
-                    iconWidget: Image.asset("lib/assets/icons/signal-white.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                    iconWidget: Image.asset("lib/assets/icons/signal.png", color: Colors.white, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                     titleWidget: Text("Signal Strength", style: graphContainerStyle),
                     detailsWidget: IconButton(
                       icon: Icon(Icons.picture_in_picture, color: Theme.of(context).primaryColor),
@@ -872,7 +871,7 @@ class SensoryPageState extends State<SensoryPage> {
                       icon: Icon(Icons.picture_in_picture, color: Theme.of(context).primaryColor),
                       onPressed: () {},
                     ),
-                    iconWidget: Image.asset("lib/assets/icons/light-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                    iconWidget: Image.asset("lib/assets/icons/light.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                     titleWidget: Text("Light", style: graphContainerStyle),
                     sizeModifier: 1.0,
                     graph: SfCartesianChart(
@@ -966,7 +965,7 @@ class SensoryPageState extends State<SensoryPage> {
                         icon: Icon(Icons.picture_in_picture, color: Theme.of(context).primaryColor),
                         onPressed: () {},
                       ),
-                      iconWidget: Image.asset("lib/assets/icons/light-white.png", width: Main.iconSize * 2, height: Main.iconSize * 2),
+                      iconWidget: Image.asset("lib/assets/icons/light.png", color: Colors.white, width: Main.iconSize * 2, height: Main.iconSize * 2),
                       titleWidget: Text("Light", style: graphContainerStyle),
                       sizeModifier: 1.0,
                       graph: Container(),

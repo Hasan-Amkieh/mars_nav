@@ -143,7 +143,7 @@ class ImageryPageState extends State {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset("lib/assets/icons/gallery-white.png", width: Main.iconSize, height: Main.iconSize),
+                        Image.asset("lib/assets/icons/gallery.png", color: Colors.white, width: Main.iconSize, height: Main.iconSize),
                         const SizedBox(width: 10),
                         const Text("Gallery", style: TextStyle(color: Colors.white)),
                       ],
@@ -153,7 +153,7 @@ class ImageryPageState extends State {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset("lib/assets/icons/camera-white.png", width: Main.iconSize, height: Main.iconSize),
+                        Image.asset("lib/assets/icons/camera.png", color: Colors.white, width: Main.iconSize, height: Main.iconSize),
                         const SizedBox(width: 10),
                         const Text("Streaming & Recording", style: TextStyle(color: Colors.white)),
                       ],
@@ -179,7 +179,7 @@ class ImageryPageState extends State {
                               Column(
                                 children: [
                                   TextButton(
-                                    child: Image.asset("lib/assets/icons/drone-${isDroneOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    child: Image.asset("lib/assets/icons/drone.png", color: isDroneOn ? Colors.white : Colors.black, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                                     onPressed: () {
                                       setState(() {
                                         isDroneOn = !isDroneOn;
@@ -190,7 +190,7 @@ class ImageryPageState extends State {
                                     },
                                   ),
                                   TextButton(
-                                    child: Image.asset("lib/assets/icons/rover-${isRoverOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    child: Image.asset("lib/assets/icons/rover.png", color: isRoverOn ? Colors.white : Colors.black, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                                     onPressed: () {
                                       setState(() {
                                         isRoverOn = !isRoverOn;
@@ -206,7 +206,7 @@ class ImageryPageState extends State {
                               Column(
                                 children: [
                                   TextButton(
-                                    child: Image.asset("lib/assets/icons/imagery-${isImageOn ? "white" : "black"}.png", width: Main.iconSize * 1.2, height: Main.iconSize * 1.2),
+                                    child: Image.asset("lib/assets/icons/imagery.png", color: isImageOn ? Colors.white : Colors.black, width: Main.iconSize * 1.2, height: Main.iconSize * 1.2),
                                     onPressed: () {
                                       setState(() {
                                         isImageOn = !isImageOn;
@@ -217,7 +217,7 @@ class ImageryPageState extends State {
                                     },
                                   ),
                                   TextButton(
-                                    child: Image.asset("lib/assets/icons/camera-${isCameraOn ? "white" : "black"}.png", width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
+                                    child: Image.asset("lib/assets/icons/camera.png", color: isCameraOn ? Colors.white : Colors.black, width: Main.iconSize * 1.5, height: Main.iconSize * 1.5),
                                     onPressed: () {
                                       setState(() {
                                         isCameraOn = !isCameraOn;
