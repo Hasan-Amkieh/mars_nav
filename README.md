@@ -13,7 +13,7 @@ Commands page, a sequence of commands can be given to the rover, some of the com
 ![commands page](https://github.com/user-attachments/assets/5b0b3f28-bb23-4b7e-8b91-e37fb9fd86dc)
 
 History page, a time database has been utilized to store all kind of data collected prior, a sepcific timeframe and a set of variables could be provided to be displayed:
-<a href="https://jmp.sh/v/ebp4tNOJIF3b8CqNx8sk"><p style="margin-bottom: 0 !important;">History Page - View Image</p><img style="max-width:400px;" src="https://previews.jumpshare.com/gif/815bc01b796dd6f1733c957c5af1949316b5f3c68f1951eecbcfe55cb8ef504320bf7c99c3e9f2a7fa78c9e05971b5b0353eb724c9433ce3aaf548d6486911e998a3276712dcd44f8db964e5bda4ac5e"></a>
+![History_Page_image](https://jmp.sh/v/ebp4tNOJIF3b8CqNx8sk)
 
 
 
