@@ -13,7 +13,7 @@ Commands page, a sequence of commands can be given to the rover, some of the com
 ![commands page](https://github.com/user-attachments/assets/5b0b3f28-bb23-4b7e-8b91-e37fb9fd86dc)
 
 History page, a time database has been utilized to store all kind of data collected prior, a sepcific timeframe and a set of variables could be provided to be displayed:
-![Description](https://d85gxhygowj8d.cloudfront.net/i7mpct%2Fpreview%2F60156058%2Fmain_large.gif?response-content-disposition=inline%3Bfilename%3D"main_large.gif"%3B&response-content-type=image%2Fgif&Expires=1723912393&Signature=dsEdk5km2oddqgZ8b15Sbf9EBIrdNsucLGxY6NuF7ngPvIfR28jvTgiTYzMtA7Wx61-6divS4qDNfhZHhuIVjpGDUw4hr0TV6wS1C5O8Vxy-BmJiSTrj3De45NaaxPWzGzHUMMy95sJpClOw042Z3Szh8gPE2lADbFQCwt3plIqBIvr5IhGKUOHkV9qdVUEFdFjFa7jeEzWlotpT3ISM3zojJvmsWD5drLP1dqDXGX2zGcYg5aPslsGNpJthEyvTNsDQkbmk09DPo4cuOD1kauNgeSNs1iN1Fmz6OjsY7~xxSh3Fji-ORT3wWkMh6DKSXg3Sr2UrUBq2McohSJ~tbg__&Key-Pair-Id=APKAJT5WQLLEOADKLHBQ)
+<div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://jumpshare.com/embed/ebp4tNOJIF3b8CqNx8sk" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
 
 
