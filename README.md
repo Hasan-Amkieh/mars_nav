@@ -13,7 +13,7 @@ Commands page, a sequence of commands can be given to the rover, some of the com
 ![commands page](https://github.com/user-attachments/assets/5b0b3f28-bb23-4b7e-8b91-e37fb9fd86dc)
 
 History page, a time database has been utilized to store all kind of data collected prior, a sepcific timeframe and a set of variables could be provided to be displayed:
-[rf](https://d85gxhygowj8d.cloudfront.net/i7mpct%2Fpreview%2F60156058%2Fmain_large.gif?response-content-disposition=inline%3Bfilename%3D"main_large.gif"%3B&response-content-type=image%2Fgif&Expires=1723913012&Signature=YS8Dfp-wmOxtympfoa~Smh6uYryqMJKawWhmT48Vc6fFPSKjIKAT~gpdMx0AwBnhx0uRt11p55-3sB21V5I7lXhcBDZfo5uFZy~lT9EKtdwYIpe9omXkwEQzT~tscxWDZA0xd1AuzOLDI~3lTR3Q1KiL4zBRmsqgSvGQG6WSeo8VWjCJLMjqMTMVr5bRfxn0wOaOi--7krzpK2RfAOBopLIz6aoFycxfSHKfOP-FFPAgMQVt3ZGAdgwKVIav10gx~V-hzNa2Mvbxu9NEARFZoTpLVR96k12UYtoqLC5b4ceOjWZnQh2aq5xxLhFQmXSXJvcwZd23C9~VM7y5GlRqEg__&Key-Pair-Id=APKAJT5WQLLEOADKLHBQ)
+![rf](https://d85gxhygowj8d.cloudfront.net/i7mpct%2Fpreview%2F60156058%2Fmain_large.gif?response-content-disposition=inline%3Bfilename%3D"main_large.gif"%3B&response-content-type=image%2Fgif&Expires=1723913012&Signature=YS8Dfp-wmOxtympfoa~Smh6uYryqMJKawWhmT48Vc6fFPSKjIKAT~gpdMx0AwBnhx0uRt11p55-3sB21V5I7lXhcBDZfo5uFZy~lT9EKtdwYIpe9omXkwEQzT~tscxWDZA0xd1AuzOLDI~3lTR3Q1KiL4zBRmsqgSvGQG6WSeo8VWjCJLMjqMTMVr5bRfxn0wOaOi--7krzpK2RfAOBopLIz6aoFycxfSHKfOP-FFPAgMQVt3ZGAdgwKVIav10gx~V-hzNa2Mvbxu9NEARFZoTpLVR96k12UYtoqLC5b4ceOjWZnQh2aq5xxLhFQmXSXJvcwZd23C9~VM7y5GlRqEg__&Key-Pair-Id=APKAJT5WQLLEOADKLHBQ)
 
 
 
